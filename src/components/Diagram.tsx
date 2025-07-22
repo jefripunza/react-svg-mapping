@@ -46,7 +46,7 @@ export type NodeTemplateObject = {
   // circle
   cx?: number;
   cy?: number;
-  r?: number;
+  r?: number; // triangle
 
   // rect
   width?: number;
@@ -65,6 +65,7 @@ export type Node = {
   id: string;
   label: string;
   labelDirection: Direction;
+  labelMargin?: number;
   x: number;
   y: number;
   template_id: string;
@@ -123,27 +124,28 @@ const Diagram: React.FC<DiagramProps> = ({
     x: number,
     y: number,
     direction: Direction,
-    offset: number = 25
+    offset: number = 25,
+    margin: number = 10
   ) => {
     switch (direction) {
       case "top":
-        return { x, y: y - offset };
+        return { x, y: y - offset - margin };
       case "bottom":
-        return { x, y: y + offset };
+        return { x, y: y + offset + margin };
       case "left":
-        return { x: x - offset, y };
+        return { x: x - offset - margin, y };
       case "right":
-        return { x: x + offset, y };
+        return { x: x + offset + margin, y };
       case "top-left":
-        return { x: x - offset, y: y - offset };
+        return { x: x - offset - margin, y: y - offset };
       case "top-right":
-        return { x: x + offset, y: y - offset };
+        return { x: x + offset + margin, y: y - offset };
       case "bottom-left":
-        return { x: x - offset, y: y + offset };
+        return { x: x - offset - margin, y: y + offset };
       case "bottom-right":
-        return { x: x + offset, y: y + offset };
+        return { x: x + offset + margin, y: y + offset };
       default:
-        return { x, y: y - offset };
+        return { x, y: y - offset - margin };
     }
   };
 
@@ -220,9 +222,11 @@ const Diagram: React.FC<DiagramProps> = ({
           <svg
             width="2000"
             height="2000"
-            style={{
-              // background: "#cbd5e1",
-            }}
+            style={
+              {
+                // background: "#cbd5e1",
+              }
+            }
           >
             {/* Define patterns for dashed/dotted lines */}
             <defs>
@@ -336,7 +340,9 @@ const Diagram: React.FC<DiagramProps> = ({
                       return (
                         <polygon
                           key={`obj-${objIndex}`}
-                          points={points.map((p) => `${p[0]},${p[1]}`).join(" ")}
+                          points={points
+                            .map((p) => `${p[0]},${p[1]}`)
+                            .join(" ")}
                           {...objProps}
                         />
                       );

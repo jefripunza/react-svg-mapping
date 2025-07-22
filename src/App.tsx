@@ -1,5 +1,6 @@
 import Diagram from "./components/Diagram";
-import { nodes, links, templates } from "./data";
+import { nodes, links } from "./data";
+import templates from "./template";
 import "./App.css";
 
 function App() {
