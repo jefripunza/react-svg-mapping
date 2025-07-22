@@ -1,4 +1,27 @@
-import type { Node, Link } from "./components/Diagram";
+import type { Node, Link, Text } from "./components/Diagram";
+
+export const texts: Text[] = [
+  {
+    id: "title",
+    x: 1150,
+    y: 50,
+    fontSize: 20,
+    isBold: true,
+    textDirection: "left",
+    fill: "#000000",
+    value: "SKEMA PEMBAGIAN AIR IRIGASI",
+  },
+  {
+    id: "subtitle",
+    x: 1200,
+    y: 100,
+    fontSize: 30,
+    isBold: true,
+    textDirection: "left",
+    fill: "#000000",
+    value: "DAERAH BENDUNG RENTANG",
+  },
+];
 
 // Nodes - Based on the irrigation diagram
 export const nodes: Node[] = [
@@ -7,8 +30,8 @@ export const nodes: Node[] = [
     id: "BT0",
     label: "B.T.0",
     labelDirection: "left",
-    x: 650,
-    y: 100,
+    x: 980,
+    y: 250,
     template_id: "bendung",
     data: { type: "bendung", capacity: "100 m³/s" },
   },
@@ -222,7 +245,7 @@ export const links: Link[] = [
     from: "BT0",
     to: "BT1",
     template_id: "saluran_primer",
-    data: { flow_color: "on", flow_direction: "down" },
+    data: { flow_color: "off", flow_direction: "down" },
   },
   {
     from: "BT1",

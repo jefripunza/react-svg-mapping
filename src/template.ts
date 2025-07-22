@@ -27,7 +27,7 @@ const node_templates: NodeTemplate[] = [
         y: -10,
       },
     ],
-    field: [
+    fields: [
       {
         id: "type",
         key: "type",
@@ -50,7 +50,7 @@ const node_templates: NodeTemplate[] = [
         r: 12,
       },
     ],
-    field: [
+    fields: [
       {
         id: "type",
         key: "type",
@@ -74,7 +74,7 @@ const node_templates: NodeTemplate[] = [
         height: 20,
       },
     ],
-    field: [
+    fields: [
       {
         id: "type",
         key: "type",
@@ -98,7 +98,7 @@ const node_templates: NodeTemplate[] = [
         height: 15,
       },
     ],
-    field: [
+    fields: [
       {
         id: "type",
         key: "type",
@@ -124,11 +124,13 @@ const link_templates: LinkTemplate[] = [
         key: "flow_color",
         value: "on",
         color: "#FF0000",
+        duration: 1,
       },
       {
         key: "flow_color",
         value: "off",
         color: "#00FF00",
+        duration: 1,
       },
     ],
   },

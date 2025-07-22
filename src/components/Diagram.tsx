@@ -24,9 +24,11 @@ export type ArrowType = "none" | "arrow" | "arrowhead";
 export type LineType = "solid" | "dashed" | "dotted";
 
 export type Text = {
+  id: string;
   x: number;
   y: number;
   fontSize: number;
+  isBold?: boolean;
   textDirection: TextDirection;
   fill: string;
   value: string;
@@ -59,13 +61,14 @@ export type NodeTemplate = {
   name: string;
   type: "node";
 
-  field: Field[];
+  fields: Field[];
   objects: NodeTemplateObject[];
 };
 export type LinkTemplateAnimationStyle = {
   key: string;
   value: string | number | boolean;
   color: string;
+  duration: number;
 };
 export type LinkTemplate = {
   id: string;
@@ -230,15 +233,7 @@ const Diagram: React.FC<DiagramProps> = ({
             // background: "#cbd5e1",
           }}
         >
-          <svg
-            width="2000"
-            height="2000"
-            style={
-              {
-                // background: "#cbd5e1",
-              }
-            }
-          >
+          <svg width="2000" height="2000">
             {/* Define patterns for dashed/dotted lines */}
             <defs>
               <pattern
@@ -286,12 +281,6 @@ const Diagram: React.FC<DiagramProps> = ({
                 (style) => link.data[style.key] === style.value
               );
 
-              console.log(
-                "animation:",
-                template.animationFlow,
-                animationFlowStyleSelected
-              );
-
               return (
                 <g key={`link-${index}`}>
                   <line
@@ -322,8 +311,12 @@ const Diagram: React.FC<DiagramProps> = ({
                           >
                             <animate
                               attributeName="stroke-dashoffset"
-                              values="0;-30;0"
-                              dur="2s"
+                              values="30;0"
+                              dur={
+                                animationFlowStyleSelected.duration
+                                  ? `${animationFlowStyleSelected.duration}s`
+                                  : "1s"
+                              }
                               repeatCount="indefinite"
                             />
                           </line>
@@ -350,7 +343,7 @@ const Diagram: React.FC<DiagramProps> = ({
               const textAnchor = getTextAnchor(node.labelDirection);
 
               return (
-                <g key={`node-${node.id}`}>
+                <g key={`node-${node.id}`} onClick={() => alert("ok")}>
                   {/* Render template objects */}
                   {template.objects.map((obj, objIndex) => {
                     const objProps = {
@@ -435,6 +428,7 @@ const Diagram: React.FC<DiagramProps> = ({
                   x={textPos.x}
                   y={textPos.y}
                   fontSize={text.fontSize}
+                  fontWeight={text.isBold ? "bold" : "normal"}
                   textAnchor={textAnchor}
                   fill={text.fill}
                 >
@@ -450,3 +444,10 @@ const Diagram: React.FC<DiagramProps> = ({
 };
 
 export default Diagram;
+interface ModalProps {
+  node: Node;
+  link: Link;
+}
+const Modal: React.FC<ModalProps> = ({ node, link }) => {
+  return <></>;
+};

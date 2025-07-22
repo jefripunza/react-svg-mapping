@@ -1,12 +1,12 @@
 import Diagram from "./components/Diagram";
-import { nodes, links } from "./data";
+import { nodes, links, texts } from "./data";
 import templates from "./template";
 import "./App.css";
 
 function App() {
   return (
     <div className="app">
-      <header className="app-header">
+      <header className="app-header bg-lime-600">
         <div className="nav-container">
           <h1 className="app-title">React SVG Mapping</h1>
           <nav className="nav-menu">
@@ -18,7 +18,12 @@ function App() {
       </header>
 
       <main className="app-main">
-        <Diagram templates={templates} nodes={nodes} links={links} />
+        <Diagram
+          templates={templates}
+          nodes={nodes}
+          links={links}
+          texts={texts}
+        />
       </main>
     </div>
   );
