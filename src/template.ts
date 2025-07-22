@@ -15,6 +15,16 @@ const node_templates: NodeTemplate[] = [
         strokeWidth: 3,
         width: 48,
         height: 48,
+        y: -36,
+      },
+      {
+        type: "rect",
+        fill: "white",
+        stroke: "#335577",
+        strokeWidth: 1,
+        width: 28,
+        height: 28,
+        y: -10,
       },
     ],
     field: [
@@ -111,11 +121,13 @@ const link_templates: LinkTemplate[] = [
     animationFlow: true,
     animationFlowStyle: [
       {
-        key: "flow_1",
+        key: "flow_color",
+        value: "on",
         color: "#FF0000",
       },
       {
-        key: "flow_2",
+        key: "flow_color",
+        value: "off",
         color: "#00FF00",
       },
     ],

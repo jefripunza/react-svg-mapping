@@ -42,17 +42,17 @@ export type Field = {
 export type NodeTemplateObject = {
   type: ObjectType;
   fill: string;
-  stroke: string;
-  strokeWidth: number;
+  stroke?: string;
+  strokeWidth?: number;
 
   // circle
-  cx?: number;
-  cy?: number;
   r?: number; // triangle
 
   // rect
   width?: number;
   height?: number;
+  x?: number;
+  y?: number;
 };
 export type NodeTemplate = {
   id: string;
@@ -64,6 +64,7 @@ export type NodeTemplate = {
 };
 export type LinkTemplateAnimationStyle = {
   key: string;
+  value: string | number | boolean;
   color: string;
 };
 export type LinkTemplate = {
@@ -101,6 +102,8 @@ export type Link = {
   to: string;
   template_id: string;
   data: Record<string, unknown>;
+  // meta
+  animation_style?: string;
 };
 
 type DiagramProps = {
@@ -173,7 +176,7 @@ const Diagram: React.FC<DiagramProps> = ({
     if (!template.arrowType || template.arrowType === "none") return null;
 
     const arrowWidth = template.arrowWidth || 10;
-    const arrowHeight = template.arrowHeight || 10;
+    // const arrowHeight = template.arrowHeight || 10;
 
     // Calculate arrow position and angle
     const angle = Math.atan2(y2 - y1, x2 - x1);
@@ -278,6 +281,22 @@ const Diagram: React.FC<DiagramProps> = ({
                 strokeProps.strokeDasharray = "2,3";
               }
 
+              const animationFlowStyle = template.animationFlowStyle || [];
+              const animationFlowStyleSelected = animationFlowStyle.find(
+                (style) => link.data[style.key] === style.value
+              );
+
+              // Calculate line length for proper gradient positioning
+              const dx = to.x - from.x;
+              const dy = to.y - from.y;
+              const length = Math.sqrt(dx * dx + dy * dy);
+
+              console.log(
+                "animation:",
+                template.animationFlow,
+                animationFlowStyleSelected
+              );
+
               return (
                 <g key={`link-${index}`}>
                   <line
@@ -287,6 +306,61 @@ const Diagram: React.FC<DiagramProps> = ({
                     y2={to.y}
                     {...strokeProps}
                   />
+
+                  {/* Animated flow overlay if enabled */}
+                  {template.animationFlow &&
+                    template.animationFlowStyle &&
+                    animationFlowStyleSelected && (
+                      <g>
+                        <g key={`link-flow-${index}`}>
+                          <defs>
+                            <linearGradient
+                              id={`animatedGradient-${index}`}
+                              x1="0%"
+                              y1="0%"
+                              x2="100%"
+                              y2="0%"
+                              gradientUnits="objectBoundingBox"
+                            >
+                              <stop offset="0%" stopColor="transparent" />
+                              <stop
+                                offset="20%"
+                                stopColor={animationFlowStyleSelected.color}
+                                stopOpacity="0.3"
+                              />
+                              <stop
+                                offset="50%"
+                                stopColor={animationFlowStyleSelected.color}
+                                stopOpacity="0.8"
+                              />
+                              <stop
+                                offset="80%"
+                                stopColor={animationFlowStyleSelected.color}
+                                stopOpacity="0.3"
+                              />
+                              <stop offset="100%" stopColor="transparent" />
+                              <animateTransform
+                                attributeName="gradientTransform"
+                                type="translate"
+                                values={`-${length} 0; ${length} 0; -${length} 0`}
+                                dur={`${2}s`}
+                                repeatCount="indefinite"
+                              />
+                            </linearGradient>
+                          </defs>
+                          <line
+                            x1={from.x}
+                            y1={from.y}
+                            x2={to.x}
+                            y2={to.y}
+                            stroke={`url(#animatedGradient-${index})`}
+                            strokeWidth={lineWidth + 2}
+                            strokeLinecap="round"
+                          />
+                        </g>
+                      </g>
+                    )}
+
                   {/* Render arrow if specified */}
                   {renderArrow(from.x, from.y, to.x, to.y, template)}
                 </g>
@@ -311,8 +385,8 @@ const Diagram: React.FC<DiagramProps> = ({
                   {template.objects.map((obj, objIndex) => {
                     const objProps = {
                       fill: obj.fill,
-                      stroke: obj.stroke,
-                      strokeWidth: obj.strokeWidth,
+                      stroke: obj.stroke || "none",
+                      strokeWidth: obj.strokeWidth || 0,
                     };
 
                     if (obj.type === "circle") {
@@ -328,11 +402,13 @@ const Diagram: React.FC<DiagramProps> = ({
                     } else if (obj.type === "rect") {
                       const width = obj.width || 30;
                       const height = obj.height || 30;
+                      const extraX = obj.x || 0;
+                      const extraY = obj.y || 0;
                       return (
                         <rect
                           key={`obj-${objIndex}`}
-                          x={node.x - width / 2}
-                          y={node.y - height / 2}
+                          x={node.x - width / 2 + extraX}
+                          y={node.y - height / 2 + extraY}
                           width={width}
                           height={height}
                           {...objProps}

@@ -5,8 +5,8 @@ export const nodes: Node[] = [
   // Main Bendung Tabo Tabo
   {
     id: "BT0",
-    label: "Bendung Tabo Tabo",
-    labelDirection: "top",
+    label: "B.T.0",
+    labelDirection: "left",
     x: 650,
     y: 100,
     template_id: "bendung",
@@ -222,7 +222,7 @@ export const links: Link[] = [
     from: "BT0",
     to: "BT1",
     template_id: "saluran_primer",
-    data: { flow_direction: "down" },
+    data: { flow_color: "on", flow_direction: "down" },
   },
   {
     from: "BT1",
