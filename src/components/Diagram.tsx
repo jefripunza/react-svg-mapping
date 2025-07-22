@@ -8,7 +8,13 @@ type DiagramProps = {
 
 const Diagram: React.FC<DiagramProps> = ({ nodes, links }) => {
   return (
-    <svg width="2000" height="2000" style={{ background: "#cbd5e1" }}>
+    <svg
+      width="2000"
+      height="2000"
+      style={{
+        // background: "#cbd5e1",
+      }}
+    >
       {/* Garis penghubung */}
       {links.map((link, index) => {
         const from = nodes.find((n) => n.id === link.from);
