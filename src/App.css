@@ -62,12 +62,12 @@
 }
 
 /* Main content area */
-.app-main {
+/* .app-main {
   flex: 1;
   display: flex;
   overflow: hidden;
   background: #f8fafc;
-}
+} */
 
 /* Zoom container - responsive to viewport */
 .zoom-container {
@@ -75,6 +75,7 @@
   height: 100%;
   position: relative;
   overflow: hidden;
+  background: #cbd5e1;
 }
 
 /* Override react-zoom-pan-pinch default styles */

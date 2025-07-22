@@ -1,6 +1,5 @@
-import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import Diagram from "./components/Diagram";
-import { nodes, links } from "./data";
+import { nodes, links, templates } from "./data";
 import "./App.css";
 
 function App() {
@@ -18,35 +17,7 @@ function App() {
       </header>
 
       <main className="app-main">
-        <div className="zoom-container">
-          <TransformWrapper
-            initialScale={1}
-            minScale={0.1}
-            maxScale={3}
-            centerOnInit={true}
-            limitToBounds={false}
-            panning={{
-              disabled: false,
-              velocityDisabled: false,
-            }}
-            wheel={{
-              disabled: false,
-            }}
-          >
-            <TransformComponent
-              wrapperStyle={{
-                width: "100%",
-                height: "100%",
-              }}
-              contentStyle={{
-                width: "100%",
-                height: "100%",
-              }}
-            >
-              <Diagram nodes={nodes} links={links} />
-            </TransformComponent>
-          </TransformWrapper>
-        </div>
+        <Diagram templates={templates} nodes={nodes} links={links} />
       </main>
     </div>
   );
