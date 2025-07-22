@@ -20,6 +20,8 @@ export type Direction =
 export type TextDirection = "top" | "bottom" | "left" | "right";
 export type FieldType = "string" | "number" | "boolean";
 export type ObjectType = "circle" | "rect" | "triangle";
+export type ArrowType = "none" | "arrow" | "arrowhead";
+export type LineType = "solid" | "dashed" | "dotted";
 
 export type Text = {
   x: number;
@@ -60,7 +62,30 @@ export type NodeTemplate = {
   field: Field[];
   objects: NodeTemplateObject[];
 };
+export type LinkTemplateAnimationStyle = {
+  key: string;
+  color: string;
+};
+export type LinkTemplate = {
+  id: string;
+  name: string;
+  type: "link";
 
+  // arrow
+  arrowType?: ArrowType;
+  arrowWidth?: number;
+  arrowHeight?: number;
+
+  // line
+  lineType?: LineType;
+  lineWidth?: number;
+
+  // animation flow
+  animationFlow?: boolean;
+  animationFlowStyle?: LinkTemplateAnimationStyle[];
+};
+
+// data
 export type Node = {
   id: string;
   label: string;
@@ -70,23 +95,6 @@ export type Node = {
   y: number;
   template_id: string;
   data: Record<string, unknown>;
-};
-export type LinkTemplate = {
-  id: string;
-  name: string;
-  type: "link";
-
-  // arrow
-  arrowType?: "none" | "arrow" | "arrowhead";
-  arrowWidth?: number;
-  arrowHeight?: number;
-
-  // line
-  lineType?: "solid" | "dashed" | "dotted";
-  lineWidth?: number;
-
-  // animation flow
-  animationFlow?: boolean;
 };
 export type Link = {
   from: string;

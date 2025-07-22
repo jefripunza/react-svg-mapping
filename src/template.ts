@@ -109,6 +109,16 @@ const link_templates: LinkTemplate[] = [
     lineType: "solid",
     lineWidth: 4,
     animationFlow: true,
+    animationFlowStyle: [
+      {
+        key: "flow_1",
+        color: "#FF0000",
+      },
+      {
+        key: "flow_2",
+        color: "#00FF00",
+      },
+    ],
   },
   // Secondary Channel (Saluran Sekunder)
   {
@@ -120,7 +130,6 @@ const link_templates: LinkTemplate[] = [
     arrowHeight: 6,
     lineType: "solid",
     lineWidth: 3,
-    animationFlow: false,
   },
   // Tertiary Channel (Saluran Tersier)
   {
@@ -132,7 +141,6 @@ const link_templates: LinkTemplate[] = [
     arrowHeight: 4,
     lineType: "solid",
     lineWidth: 2,
-    animationFlow: false,
   },
 ];
 
