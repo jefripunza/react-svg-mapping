@@ -286,11 +286,6 @@ const Diagram: React.FC<DiagramProps> = ({
                 (style) => link.data[style.key] === style.value
               );
 
-              // Calculate line length for proper gradient positioning
-              const dx = to.x - from.x;
-              const dy = to.y - from.y;
-              const length = Math.sqrt(dx * dx + dy * dy);
-
               console.log(
                 "animation:",
                 template.animationFlow,
@@ -312,51 +307,26 @@ const Diagram: React.FC<DiagramProps> = ({
                     template.animationFlowStyle &&
                     animationFlowStyleSelected && (
                       <g>
+                        {/* Moving dash animation */}
                         <g key={`link-flow-${index}`}>
-                          <defs>
-                            <linearGradient
-                              id={`animatedGradient-${index}`}
-                              x1="0%"
-                              y1="0%"
-                              x2="100%"
-                              y2="0%"
-                              gradientUnits="objectBoundingBox"
-                            >
-                              <stop offset="0%" stopColor="transparent" />
-                              <stop
-                                offset="20%"
-                                stopColor={animationFlowStyleSelected.color}
-                                stopOpacity="0.3"
-                              />
-                              <stop
-                                offset="50%"
-                                stopColor={animationFlowStyleSelected.color}
-                                stopOpacity="0.8"
-                              />
-                              <stop
-                                offset="80%"
-                                stopColor={animationFlowStyleSelected.color}
-                                stopOpacity="0.3"
-                              />
-                              <stop offset="100%" stopColor="transparent" />
-                              <animateTransform
-                                attributeName="gradientTransform"
-                                type="translate"
-                                values={`-${length} 0; ${length} 0; -${length} 0`}
-                                dur={`${2}s`}
-                                repeatCount="indefinite"
-                              />
-                            </linearGradient>
-                          </defs>
                           <line
                             x1={from.x}
                             y1={from.y}
                             x2={to.x}
                             y2={to.y}
-                            stroke={`url(#animatedGradient-${index})`}
-                            strokeWidth={lineWidth + 2}
+                            stroke={animationFlowStyleSelected.color}
+                            strokeWidth={lineWidth + 1}
                             strokeLinecap="round"
-                          />
+                            strokeDasharray="20 10"
+                            strokeDashoffset="0"
+                          >
+                            <animate
+                              attributeName="stroke-dashoffset"
+                              values="0;-30;0"
+                              dur="2s"
+                              repeatCount="indefinite"
+                            />
+                          </line>
                         </g>
                       </g>
                     )}
