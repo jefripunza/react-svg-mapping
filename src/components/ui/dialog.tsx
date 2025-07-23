@@ -19,33 +19,43 @@ type DialogDirection =
   | "bottom-left"
   | "bottom-right";
 
+const DialogHeightContext = React.createContext<number>(500);
+const DialogWidthContext = React.createContext<number>(500);
 const DialogDirectionContext = React.createContext<DialogDirection>("center");
 const DialogOverlayContext = React.createContext<boolean>(true);
 
 interface DialogProps extends DialogPrimitive.DialogProps {
   useOverlay?: boolean;
   direction?: DialogDirection;
+  height?: number;
+  width?: number;
 }
 
 const Dialog = ({
   onOpenChange,
   useOverlay = true,
   direction = "center",
+  height = 500,
+  width = 500,
   children,
   ...props
 }: DialogProps) => {
   return (
-    <DialogOverlayContext.Provider value={useOverlay}>
-      <DialogDirectionContext.Provider value={direction}>
-        <DialogPrimitive.Root
-          onOpenChange={onOpenChange}
-          modal={true}
-          {...props}
-        >
-          {children}
-        </DialogPrimitive.Root>
-      </DialogDirectionContext.Provider>
-    </DialogOverlayContext.Provider>
+    <DialogHeightContext.Provider value={height}>
+      <DialogWidthContext.Provider value={width}>
+        <DialogOverlayContext.Provider value={useOverlay}>
+          <DialogDirectionContext.Provider value={direction}>
+            <DialogPrimitive.Root
+              onOpenChange={onOpenChange}
+              modal={true}
+              {...props}
+            >
+              {children}
+            </DialogPrimitive.Root>
+          </DialogDirectionContext.Provider>
+        </DialogOverlayContext.Provider>
+      </DialogWidthContext.Provider>
+    </DialogHeightContext.Provider>
   );
 };
 
@@ -79,9 +89,12 @@ const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   DialogContentProps
 >(({ className, children, hideX, ...props }, ref) => {
-  // Get the useOverlay value from context
+  // Get the values from context
   const useOverlay = React.useContext(DialogOverlayContext);
   const direction = React.useContext(DialogDirectionContext);
+  const height = React.useContext(DialogHeightContext);
+  const width = React.useContext(DialogWidthContext);
+
   // Create a wrapper to prevent event propagation
   const handleContentClick = (e: React.MouseEvent) => {
     // Prevent click events from bubbling up to the dialog root

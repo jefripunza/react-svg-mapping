@@ -473,6 +473,7 @@ const Diagram: React.FC<DiagramProps> = ({
       </TransformWrapper>
 
       <LegendModal templates={templates} />
+      <ChatAiModal />
       <DetailsModal
         templates={templates}
         nodes={nodes}
@@ -502,7 +503,7 @@ const LegendModal: React.FC<LegendModalProps> = ({ templates }) => {
     >
       <DialogTrigger asChild>
         <button
-          className="fixed top-20 right-4 z-10 bg-white p-2 rounded-md shadow-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-lime-500"
+          className="fixed bottom-4 left-4 z-10 bg-white p-2 rounded-md shadow-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-lime-500"
           onClick={() => setLegendOpen(true)}
         >
           <svg
@@ -809,5 +810,162 @@ const DetailsModal: React.FC<DetailsModalProps> = ({
 
 interface ChatAiModalProps {}
 const ChatAiModal: React.FC<ChatAiModalProps> = ({}) => {
-  return <></>;
+  const [chatOpen, setChatOpen] = useState(false);
+  const [messages, setMessages] = useState<
+    Array<{ id: string; type: "user" | "ai"; content: string; timestamp: Date }>
+  >([]);
+  const [prompt, setPrompt] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSendMessage = async () => {
+    if (!prompt.trim() || isLoading) return;
+
+    const userMessage = {
+      id: `user-${Date.now()}`,
+      type: "user" as const,
+      content: prompt.trim(),
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setPrompt("");
+    setIsLoading(true);
+
+    // Simulate AI response delay
+    setTimeout(() => {
+      const aiMessage = {
+        id: `ai-${Date.now()}`,
+        type: "ai" as const,
+        content: `This is a simulated AI response to: "${userMessage.content}". In a real implementation, this would connect to Ollama or another AI service.`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, aiMessage]);
+      setIsLoading(false);
+    }, 1500);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  return (
+    <Dialog
+      open={chatOpen}
+      onOpenChange={setChatOpen}
+      direction="right"
+      useOverlay={false}
+      height={500}
+    >
+      <DialogTrigger asChild>
+        <button
+          className="fixed bottom-4 right-4 z-10 bg-blue-500 text-white p-2 rounded-md shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onClick={() => setChatOpen(true)}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[400px] h-[600px] flex flex-col">
+        <DialogHeader>
+          <DialogTitle>AI Chat Assistant</DialogTitle>
+          <DialogDescription>
+            Ask questions about the diagram or get help with analysis
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto space-y-4 py-4">
+          {messages.length === 0 ? (
+            <div className="text-center text-gray-500 mt-8">
+              <p>Start a conversation with the AI assistant!</p>
+              <p className="text-sm mt-2">
+                Ask about nodes, edges, or diagram analysis.
+              </p>
+            </div>
+          ) : (
+            messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${
+                  message.type === "user" ? "justify-end" : "justify-start"
+                }`}
+              >
+                <div
+                  className={`max-w-[80%] p-3 rounded-lg ${
+                    message.type === "user"
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-100 text-gray-900"
+                  }`}
+                >
+                  <p className="text-sm">{message.content}</p>
+                  <p className="text-xs mt-1 opacity-70">
+                    {message.timestamp.toLocaleTimeString()}
+                  </p>
+                </div>
+              </div>
+            ))
+          )}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="bg-gray-100 text-gray-900 p-3 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                  <span className="text-sm">AI is thinking...</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Input Area */}
+        <div className="border-t pt-4">
+          <div className="flex space-x-2">
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Type your message... (Press Enter to send)"
+              disabled={isLoading}
+              className="flex-1 p-2 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              rows={2}
+            />
+            <button
+              onClick={handleSendMessage}
+              disabled={!prompt.trim() || isLoading}
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22,2 15,22 11,13 2,9"></polygon>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 };
