@@ -1,8 +1,12 @@
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 import { X } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 type DialogDirection =
   | "center"
@@ -142,8 +146,12 @@ const DialogContent = React.forwardRef<
           `fixed ${positionStyles} z-50 grid w-full max-w-lg gap-4 border bg-white p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 ${animationStyles} sm:rounded-lg`,
           className
         )}
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onInteractOutside={(e) => e.preventDefault()}
+        onPointerDownOutside={(e) => {
+          if (useOverlay) e.preventDefault();
+        }}
+        onInteractOutside={(e) => {
+          if (useOverlay) e.preventDefault();
+        }}
         onClick={handleContentClick}
         onMouseDown={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}

@@ -470,6 +470,8 @@ const Diagram: React.FC<DiagramProps> = ({
         </TransformComponent>
       </TransformWrapper>
 
+      {/* Legend Dialog */}
+
       {/* Modal Dialog */}
       <Dialog
         open={modalOpen}
