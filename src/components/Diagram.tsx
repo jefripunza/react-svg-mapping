@@ -5,7 +5,7 @@
  * Contact: jefriherditriyanto@gmail.com
  */
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import {
   Dialog,
@@ -123,12 +123,14 @@ type DiagramProps = {
   nodes: Node[];
   edges: Edge[];
   texts?: Text[];
+  useChatAI?: boolean;
 };
 const Diagram: React.FC<DiagramProps> = ({
   templates,
   nodes,
   edges,
   texts = [],
+  useChatAI = false,
 }) => {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
@@ -473,7 +475,7 @@ const Diagram: React.FC<DiagramProps> = ({
       </TransformWrapper>
 
       <LegendModal templates={templates} />
-      <ChatAiModal />
+      {useChatAI && <ChatAiModal />}
       <DetailsModal
         templates={templates}
         nodes={nodes}
@@ -817,6 +819,21 @@ const ChatAiModal: React.FC<ChatAiModalProps> = ({}) => {
   const [prompt, setPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Ref for messages container to enable auto-scrolling
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Function to scroll to bottom of messages
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Auto-scroll when messages change
+  useEffect(() => {
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [messages]);
+
   const handleSendMessage = async () => {
     if (!prompt.trim() || isLoading) return;
 
@@ -933,27 +950,31 @@ const ChatAiModal: React.FC<ChatAiModalProps> = ({}) => {
               </p>
             </div>
           ) : (
-            messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${
-                  message.type === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
+            <>
+              {messages.map((message) => (
                 <div
-                  className={`max-w-[80%] p-3 rounded-lg ${
-                    message.type === "user"
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-100 text-gray-900"
+                  key={message.id}
+                  className={`flex ${
+                    message.type === "user" ? "justify-end" : "justify-start"
                   }`}
                 >
-                  <p className="text-sm">{message.content}</p>
-                  <p className="text-xs mt-1 opacity-70">
-                    {message.timestamp.toLocaleTimeString()}
-                  </p>
+                  <div
+                    className={`max-w-[80%] p-3 rounded-lg ${
+                      message.type === "user"
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-100 text-gray-900"
+                    }`}
+                  >
+                    <p className="text-sm">{message.content}</p>
+                    <p className="text-xs mt-1 opacity-70">
+                      {message.timestamp.toLocaleTimeString()}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+              {/* Invisible element for auto-scrolling */}
+              <div ref={messagesEndRef} />
+            </>
           )}
           {isLoading && (
             <div className="flex justify-start">

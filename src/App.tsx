@@ -27,6 +27,7 @@ function App() {
           nodes={nodes}
           edges={edges}
           texts={texts}
+          useChatAI={true}
         />
       </main>
     </div>
