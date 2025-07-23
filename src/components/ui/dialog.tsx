@@ -169,7 +169,11 @@ const DialogContent = React.forwardRef<
           className
         )}
         style={sizeStyles}
+        onPointerDownOutside={(e) => useOverlay && e.preventDefault()}
+        onInteractOutside={(e) => useOverlay && e.preventDefault()}
         onClick={handleContentClick}
+        onMouseDown={(e) => useOverlay && e.stopPropagation()}
+        onPointerDown={(e) => useOverlay && e.stopPropagation()}
         {...props}
       >
         <div className="max-h-[85vh] overflow-y-auto mt-6 p-2 bg-white">

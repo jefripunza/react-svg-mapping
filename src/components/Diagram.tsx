@@ -857,7 +857,7 @@ const ChatAiModal: React.FC<ChatAiModalProps> = ({}) => {
       onOpenChange={setChatOpen}
       direction="right"
       useOverlay={false}
-      height={500}
+      height={1000}
     >
       <DialogTrigger asChild>
         <button
