@@ -12,9 +12,6 @@ function App() {
           </h1>
           <nav className="flex gap-4 md:justify-center md:flex-wrap">
             <button className="bg-white/10 border border-white/20 text-white px-4 py-2 rounded-md cursor-pointer text-sm font-medium transition-all duration-200 backdrop-blur-sm hover:bg-white/20 hover:border-white/30 hover:-translate-y-0.5 active:translate-y-0 md:px-3 md:py-1.5 md:text-xs sm:px-2.5 sm:py-1 sm:text-xs">
-              Home
-            </button>
-            <button className="bg-white/10 border border-white/20 text-white px-4 py-2 rounded-md cursor-pointer text-sm font-medium transition-all duration-200 backdrop-blur-sm hover:bg-white/20 hover:border-white/30 hover:-translate-y-0.5 active:translate-y-0 md:px-3 md:py-1.5 md:text-xs sm:px-2.5 sm:py-1 sm:text-xs">
               Diagram
             </button>
             <button className="bg-white/10 border border-white/20 text-white px-4 py-2 rounded-md cursor-pointer text-sm font-medium transition-all duration-200 backdrop-blur-sm hover:bg-white/20 hover:border-white/30 hover:-translate-y-0.5 active:translate-y-0 md:px-3 md:py-1.5 md:text-xs sm:px-2.5 sm:py-1 sm:text-xs">
