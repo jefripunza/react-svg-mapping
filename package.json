@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@arcgis/core": "^4.33.10",
+    "@arcgis/map-components": "^4.33.11",
     "@radix-ui/react-dialog": "^1.1.14",
     "clsx": "^2.1.1",
     "lucide-react": "0.462.0",

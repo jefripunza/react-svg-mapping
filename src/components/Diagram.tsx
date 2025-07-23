@@ -5,6 +5,10 @@
  * Contact: jefriherditriyanto@gmail.com
  */
 
+// dummy
+import templates from "@/template";
+import { nodes, edges, texts } from "@/data";
+
 import React, { useState, useRef, useEffect } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import type { ReactZoomPanPinchRef } from "react-zoom-pan-pinch";
@@ -122,18 +126,10 @@ export type Edge = {
 };
 
 type DiagramProps = {
-  templates: (NodeTemplate | EdgeTemplate)[];
-  nodes: Node[];
-  edges: Edge[];
-  texts?: Text[];
   useChatAI?: boolean;
   useAutoFocus?: boolean;
 };
 const Diagram: React.FC<DiagramProps> = ({
-  templates,
-  nodes,
-  edges,
-  texts = [],
   useChatAI = false,
   useAutoFocus = false,
 }) => {
