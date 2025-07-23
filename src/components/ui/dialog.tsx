@@ -19,12 +19,16 @@ type DialogDirection =
   | "bottom-left"
   | "bottom-right";
 
+const DialogHeaderContext = React.createContext<React.JSX.Element | null>(null);
+const DialogFooterContext = React.createContext<React.JSX.Element | null>(null);
 const DialogHeightContext = React.createContext<number>(500);
 const DialogWidthContext = React.createContext<number>(500);
 const DialogDirectionContext = React.createContext<DialogDirection>("center");
 const DialogOverlayContext = React.createContext<boolean>(true);
 
 interface DialogProps extends DialogPrimitive.DialogProps {
+  header?: React.JSX.Element | null;
+  footer?: React.JSX.Element | null;
   useOverlay?: boolean;
   direction?: DialogDirection;
   height?: number;
@@ -33,6 +37,8 @@ interface DialogProps extends DialogPrimitive.DialogProps {
 
 const Dialog = ({
   onOpenChange,
+  header = null,
+  footer = null,
   useOverlay = true,
   direction = "center",
   height = 500,
@@ -41,21 +47,25 @@ const Dialog = ({
   ...props
 }: DialogProps) => {
   return (
-    <DialogHeightContext.Provider value={height}>
-      <DialogWidthContext.Provider value={width}>
-        <DialogOverlayContext.Provider value={useOverlay}>
-          <DialogDirectionContext.Provider value={direction}>
-            <DialogPrimitive.Root
-              onOpenChange={onOpenChange}
-              modal={true}
-              {...props}
-            >
-              {children}
-            </DialogPrimitive.Root>
-          </DialogDirectionContext.Provider>
-        </DialogOverlayContext.Provider>
-      </DialogWidthContext.Provider>
-    </DialogHeightContext.Provider>
+    <DialogHeaderContext.Provider value={header}>
+      <DialogFooterContext.Provider value={footer}>
+        <DialogHeightContext.Provider value={height}>
+          <DialogWidthContext.Provider value={width}>
+            <DialogOverlayContext.Provider value={useOverlay}>
+              <DialogDirectionContext.Provider value={direction}>
+                <DialogPrimitive.Root
+                  onOpenChange={onOpenChange}
+                  modal={true}
+                  {...props}
+                >
+                  {children}
+                </DialogPrimitive.Root>
+              </DialogDirectionContext.Provider>
+            </DialogOverlayContext.Provider>
+          </DialogWidthContext.Provider>
+        </DialogHeightContext.Provider>
+      </DialogFooterContext.Provider>
+    </DialogHeaderContext.Provider>
   );
 };
 
@@ -90,6 +100,8 @@ const DialogContent = React.forwardRef<
   DialogContentProps
 >(({ className, children, hideX, ...props }, ref) => {
   // Get the values from context
+  const header = React.useContext(DialogHeaderContext);
+  const footer = React.useContext(DialogFooterContext);
   const useOverlay = React.useContext(DialogOverlayContext);
   const direction = React.useContext(DialogDirectionContext);
   const height = React.useContext(DialogHeightContext);
@@ -163,7 +175,7 @@ const DialogContent = React.forwardRef<
       <DialogPrimitive.Content
         ref={ref}
         className={cn(
-          "fixed z-9999 grid gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out",
+          "fixed z-9999 grid gap-4 border bg-white p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out",
           positionStyles,
           animationStyles,
           className
