@@ -28,6 +28,7 @@ function App() {
           edges={edges}
           texts={texts}
           useChatAI={true}
+          useAutoFocus={true}
         />
       </main>
     </div>

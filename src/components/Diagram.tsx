@@ -36,17 +36,18 @@ export type Text = {
   id: string;
   x: number;
   y: number;
-  fontSize: number;
-  isBold?: boolean;
-  textDirection: TextDirection;
+  font_size: number;
+  is_bold?: boolean;
+  text_direction: TextDirection;
   fill: string;
   value: string;
 };
 export type Field = {
   id: string;
   key: string;
+  name: string;
+  unit: string;
   type: FieldType;
-  value: string | number | boolean;
 };
 
 // Template
@@ -54,7 +55,7 @@ export type NodeTemplateObject = {
   type: ObjectType;
   fill: string;
   stroke?: string;
-  strokeWidth?: number;
+  stroke_width?: number;
 
   // circle
   r?: number; // triangle
@@ -85,25 +86,26 @@ export type EdgeTemplate = {
   type: "edge";
 
   // arrow
-  arrowType?: ArrowType;
-  arrowWidth?: number;
-  arrowHeight?: number;
+  arrow_type?: ArrowType;
+  arrow_width?: number;
+  arrow_height?: number;
 
   // line
-  lineType?: LineType;
-  lineWidth?: number;
+  line_type?: LineType;
+  line_width?: number;
 
   // animation flow
-  animationFlow?: boolean;
-  animationFlowStyle?: EdgeTemplateAnimationStyle[];
+  animation_flow?: boolean;
+  animation_flow_style?: EdgeTemplateAnimationStyle[];
 };
 
 // data
 export type Node = {
   id: string;
   label: string;
-  labelDirection: Direction;
-  labelMargin?: number;
+  label_direction: Direction;
+  label_x?: number;
+  label_y?: number;
   x: number;
   y: number;
   template_id: string;
@@ -125,6 +127,7 @@ type DiagramProps = {
   edges: Edge[];
   texts?: Text[];
   useChatAI?: boolean;
+  useAutoFocus?: boolean;
 };
 const Diagram: React.FC<DiagramProps> = ({
   templates,
@@ -132,6 +135,7 @@ const Diagram: React.FC<DiagramProps> = ({
   edges,
   texts = [],
   useChatAI = false,
+  useAutoFocus = false,
 }) => {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
@@ -143,29 +147,29 @@ const Diagram: React.FC<DiagramProps> = ({
   // Menghitung ukuran SVG berdasarkan koordinat node terbesar
   const calculateSvgSize = () => {
     if (nodes.length === 0) return { width: 2000, height: 2000 };
-    
+
     // Cari koordinat x dan y terbesar dari semua node
     let maxX = 0;
     let maxY = 0;
-    
-    nodes.forEach(node => {
+
+    nodes.forEach((node) => {
       if (node.x > maxX) maxX = node.x;
       if (node.y > maxY) maxY = node.y;
     });
-    
+
     // Tambahkan padding 100px
     return {
-      width: maxX + 100,
-      height: maxY + 100
+      width: maxX + 1000,
+      height: maxY + 1000,
     };
   };
-  
+
   // Hitung ukuran SVG
   const svgSize = calculateSvgSize();
-  
+
   // Auto-focus ke node pertama saat diagram dimuat
   useEffect(() => {
-    if (nodes.length > 0 && transformComponentRef.current) {
+    if (nodes.length > 0 && transformComponentRef.current && useAutoFocus) {
       // Ambil koordinat node pertama
       const firstNode = nodes[0];
       const x = firstNode.x;
@@ -249,9 +253,9 @@ const Diagram: React.FC<DiagramProps> = ({
     y2: number,
     template: EdgeTemplate
   ) => {
-    if (!template.arrowType || template.arrowType === "none") return null;
+    if (!template.arrow_type || template.arrow_type === "none") return null;
 
-    const arrowWidth = template.arrowWidth || 10;
+    const arrowWidth = template.arrow_width || 10;
     // const arrowHeight = template.arrowHeight || 10;
 
     // Calculate arrow position and angle
@@ -313,9 +317,9 @@ const Diagram: React.FC<DiagramProps> = ({
             // background: "#cbd5e1",
           }}
         >
-          <svg 
-            width={svgSize.width} 
-            height={svgSize.height} 
+          <svg
+            width={svgSize.width}
+            height={svgSize.height}
             viewBox={`0 0 ${svgSize.width} ${svgSize.height}`}
           >
             {/* Define patterns for dashed/dotted lines */}
@@ -347,20 +351,20 @@ const Diagram: React.FC<DiagramProps> = ({
               // Skip if nodes or template not found
               if (!from || !to || !template) return null;
 
-              const lineWidth = template.lineWidth || 3;
+              const lineWidth = template.line_width || 3;
               let strokeProps: any = {
                 stroke: "#003366",
                 strokeWidth: lineWidth,
               };
 
               // Apply line style
-              if (template.lineType === "dashed") {
+              if (template.line_type === "dashed") {
                 strokeProps.strokeDasharray = "10,5";
-              } else if (template.lineType === "dotted") {
+              } else if (template.line_type === "dotted") {
                 strokeProps.strokeDasharray = "2,3";
               }
 
-              const animationFlowStyle = template.animationFlowStyle || [];
+              const animationFlowStyle = template.animation_flow_style || [];
               const animationFlowStyleSelected = animationFlowStyle.find(
                 (style) => edge.data[style.key] === style.value
               );
@@ -380,8 +384,8 @@ const Diagram: React.FC<DiagramProps> = ({
                   />
 
                   {/* Animated flow overlay if enabled */}
-                  {template.animationFlow &&
-                    template.animationFlowStyle &&
+                  {template.animation_flow &&
+                    template.animation_flow_style &&
                     animationFlowStyleSelected && (
                       <g>
                         {/* Moving dash animation */}
@@ -424,11 +428,11 @@ const Diagram: React.FC<DiagramProps> = ({
               if (!template) return null;
 
               const labelPos = getLabelPosition(
-                node.x,
-                node.y,
-                node.labelDirection
+                node.x + (node.label_x || 0),
+                node.y + (node.label_y || 0),
+                node.label_direction
               );
-              const textAnchor = getTextAnchor(node.labelDirection);
+              const textAnchor = getTextAnchor(node.label_direction);
 
               return (
                 <g
@@ -441,15 +445,15 @@ const Diagram: React.FC<DiagramProps> = ({
                     const objProps = {
                       fill: obj.fill,
                       stroke: obj.stroke || "none",
-                      strokeWidth: obj.strokeWidth || 0,
+                      stroke_width: obj.stroke_width || 0,
                     };
 
                     if (obj.type === "circle") {
                       return (
                         <circle
                           key={`obj-${objIndex}`}
-                          cx={node.x}
-                          cy={node.y}
+                          cx={node.x + (obj.x || 0)}
+                          cy={node.y + (obj.y || 0)}
                           r={obj.r || 15}
                           {...objProps}
                         />
@@ -509,18 +513,18 @@ const Diagram: React.FC<DiagramProps> = ({
               const textPos = getLabelPosition(
                 text.x,
                 text.y,
-                text.textDirection,
+                text.text_direction,
                 0
               );
-              const textAnchor = getTextAnchor(text.textDirection);
+              const textAnchor = getTextAnchor(text.text_direction);
 
               return (
                 <text
                   key={`text-${index}`}
                   x={textPos.x}
                   y={textPos.y}
-                  fontSize={text.fontSize}
-                  fontWeight={text.isBold ? "bold" : "normal"}
+                  fontSize={text.font_size}
+                  fontWeight={text.is_bold ? "bold" : "normal"}
                   textAnchor={textAnchor}
                   fill={text.fill}
                 >
@@ -617,7 +621,7 @@ const LegendModal: React.FC<LegendModalProps> = ({ templates }) => {
                                   r={obj.r || 10}
                                   fill={obj.fill}
                                   stroke={obj.stroke}
-                                  strokeWidth={obj.strokeWidth}
+                                  strokeWidth={obj.stroke_width}
                                 />
                               );
                             } else if (obj.type === "rect") {
@@ -630,7 +634,7 @@ const LegendModal: React.FC<LegendModalProps> = ({ templates }) => {
                                   height={obj.height || 20}
                                   fill={obj.fill}
                                   stroke={obj.stroke}
-                                  strokeWidth={obj.strokeWidth}
+                                  strokeWidth={obj.stroke_width}
                                 />
                               );
                             }
@@ -666,15 +670,15 @@ const LegendModal: React.FC<LegendModalProps> = ({ templates }) => {
                             x2={35}
                             y2={20}
                             stroke="#335577"
-                            strokeWidth={edgeTemplate.lineWidth || 1}
+                            strokeWidth={edgeTemplate.line_width || 1}
                             strokeDasharray={
-                              edgeTemplate.lineType === "dashed"
+                              edgeTemplate.line_type === "dashed"
                                 ? "4 2"
                                 : undefined
                             }
                           />
-                          {(edgeTemplate.arrowType === "arrow" ||
-                            edgeTemplate.arrowType === "arrowhead") && (
+                          {(edgeTemplate.arrow_type === "arrow" ||
+                            edgeTemplate.arrow_type === "arrowhead") && (
                             <polygon
                               points="35,20 30,17 30,23"
                               fill="#335577"
@@ -728,7 +732,7 @@ const DetailsModal: React.FC<DetailsModalProps> = ({
             {selectedNode
               ? `Node: ${nodeTemplate?.name} (${selectedNode.label})`
               : selectedEdge
-              ? "Edge Information"
+              ? `Edge: ${selectedEdge.id}`
               : "Information"}
           </DialogTitle>
           <DialogDescription>
