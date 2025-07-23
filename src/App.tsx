@@ -1,5 +1,5 @@
 import Diagram from "./components/Diagram";
-import { nodes, links, texts } from "./data";
+import { nodes, edges, texts } from "./data";
 import templates from "./template";
 
 function App() {
@@ -25,7 +25,7 @@ function App() {
         <Diagram
           templates={templates}
           nodes={nodes}
-          links={links}
+          edges={edges}
           texts={texts}
         />
       </main>

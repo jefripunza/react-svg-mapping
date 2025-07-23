@@ -1,4 +1,4 @@
-import type { NodeTemplate, LinkTemplate } from "./components/Diagram";
+import type { NodeTemplate, EdgeTemplate } from "./components/Diagram";
 
 // Node Templates
 const node_templates: NodeTemplate[] = [
@@ -109,13 +109,13 @@ const node_templates: NodeTemplate[] = [
   },
 ];
 
-// Link Templates
-const link_templates: LinkTemplate[] = [
+// Edge Templates
+const edge_templates: EdgeTemplate[] = [
   // Primary Channel (Saluran Primer)
   {
     id: "saluran_primer",
     name: "Saluran Primer",
-    type: "link",
+    type: "edge",
     lineType: "solid",
     lineWidth: 4,
     animationFlow: true,
@@ -136,9 +136,9 @@ const link_templates: LinkTemplate[] = [
   },
   // Secondary Channel (Saluran Sekunder)
   {
-    id: "saluran_sekunder_link",
+    id: "saluran_sekunder_edge",
     name: "Saluran Sekunder",
-    type: "link",
+    type: "edge",
     arrowType: "arrow",
     arrowWidth: 6,
     arrowHeight: 6,
@@ -149,7 +149,7 @@ const link_templates: LinkTemplate[] = [
   {
     id: "saluran_tersier",
     name: "Saluran Tersier",
-    type: "link",
+    type: "edge",
     arrowType: "arrow",
     arrowWidth: 4,
     arrowHeight: 4,
@@ -158,5 +158,5 @@ const link_templates: LinkTemplate[] = [
   },
 ];
 
-const templates = [...node_templates, ...link_templates];
+const templates = [...node_templates, ...edge_templates];
 export default templates;

@@ -1,4 +1,4 @@
-import type { Node, Link, Text } from "./components/Diagram";
+import type { Node, Edge, Text } from "./components/Diagram";
 
 export const texts: Text[] = [
   {
@@ -238,8 +238,8 @@ export const nodes: Node[] = [
   },
 ];
 
-// Links - Water flow connections
-export const links: Link[] = [
+// Edges - Water flow connections
+export const edges: Edge[] = [
   // Main flow from Bendung
   {
     id: "BT0-BT1",
@@ -268,14 +268,14 @@ export const links: Link[] = [
     id: "BP12-P15K",
     from: "BP12",
     to: "P15K",
-    template_id: "saluran_sekunder_link",
+    template_id: "saluran_sekunder_edge",
     data: { flow_direction: "right" },
   },
   {
     id: "P15K-BP11",
     from: "P15K",
     to: "BP11",
-    template_id: "saluran_sekunder_link",
+    template_id: "saluran_sekunder_edge",
     data: { flow_direction: "right" },
   },
 
@@ -314,7 +314,7 @@ export const links: Link[] = [
     id: "P61K-P55K",
     from: "P61K",
     to: "P55K",
-    template_id: "saluran_sekunder_link",
+    template_id: "saluran_sekunder_edge",
     data: { flow_direction: "down-right" },
   },
   {
@@ -344,7 +344,7 @@ export const links: Link[] = [
     id: "BT3-P1Ka",
     from: "BT3",
     to: "P1Ka",
-    template_id: "saluran_sekunder_link",
+    template_id: "saluran_sekunder_edge",
     data: { flow_direction: "down-right" },
   },
   {
@@ -388,7 +388,7 @@ export const links: Link[] = [
     id: "P4K-BP5",
     from: "P4K",
     to: "BP5",
-    template_id: "saluran_sekunder_link",
+    template_id: "saluran_sekunder_edge",
     data: { flow_direction: "right" },
   },
   {

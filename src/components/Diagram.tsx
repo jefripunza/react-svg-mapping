@@ -72,16 +72,16 @@ export type NodeTemplate = {
   fields: Field[];
   objects: NodeTemplateObject[];
 };
-export type LinkTemplateAnimationStyle = {
+export type EdgeTemplateAnimationStyle = {
   key: string;
   value: string | number | boolean;
   color: string;
   duration: number;
 };
-export type LinkTemplate = {
+export type EdgeTemplate = {
   id: string;
   name: string;
-  type: "link";
+  type: "edge";
 
   // arrow
   arrowType?: ArrowType;
@@ -94,7 +94,7 @@ export type LinkTemplate = {
 
   // animation flow
   animationFlow?: boolean;
-  animationFlowStyle?: LinkTemplateAnimationStyle[];
+  animationFlowStyle?: EdgeTemplateAnimationStyle[];
 };
 
 // data
@@ -108,7 +108,7 @@ export type Node = {
   template_id: string;
   data: Record<string, unknown>;
 };
-export type Link = {
+export type Edge = {
   id: string;
   from: string;
   to: string;
@@ -119,29 +119,29 @@ export type Link = {
 };
 
 type DiagramProps = {
-  templates: (NodeTemplate | LinkTemplate)[];
+  templates: (NodeTemplate | EdgeTemplate)[];
   nodes: Node[];
-  links: Link[];
+  edges: Edge[];
   texts?: Text[];
 };
 const Diagram: React.FC<DiagramProps> = ({
   templates,
   nodes,
-  links,
+  edges,
   texts = [],
 }) => {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-  const [selectedLink, setSelectedLink] = useState<Link | null>(null);
+  const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
   const handleNodeClick = (node: Node) => {
     setSelectedNode(node);
-    setSelectedLink(null);
+    setSelectedEdge(null);
     setModalOpen(true);
   };
 
-  const handleLinkClick = (link: Link) => {
-    setSelectedLink(link);
+  const handleEdgeClick = (edge: Edge) => {
+    setSelectedEdge(edge);
     setSelectedNode(null);
     setModalOpen(true);
   };
@@ -152,10 +152,10 @@ const Diagram: React.FC<DiagramProps> = ({
     ) as NodeTemplate;
   };
 
-  const getLinkTemplate = (templateId: string): LinkTemplate | undefined => {
+  const getEdgeTemplate = (templateId: string): EdgeTemplate | undefined => {
     return templates.find(
-      (t) => t.id === templateId && t.type === "link"
-    ) as LinkTemplate;
+      (t) => t.id === templateId && t.type === "edge"
+    ) as EdgeTemplate;
   };
 
   const getLabelPosition = (
@@ -198,7 +198,7 @@ const Diagram: React.FC<DiagramProps> = ({
     y1: number,
     x2: number,
     y2: number,
-    template: LinkTemplate
+    template: EdgeTemplate
   ) => {
     if (!template.arrowType || template.arrowType === "none") return null;
 
@@ -278,11 +278,11 @@ const Diagram: React.FC<DiagramProps> = ({
               </pattern>
             </defs>
 
-            {/* Render Links */}
-            {links.map((link, index) => {
-              const from = nodes.find((n) => n.id === link.from);
-              const to = nodes.find((n) => n.id === link.to);
-              const template = getLinkTemplate(link.template_id);
+            {/* Render Edges */}
+            {edges.map((edge, index) => {
+              const from = nodes.find((n) => n.id === edge.from);
+              const to = nodes.find((n) => n.id === edge.to);
+              const template = getEdgeTemplate(edge.template_id);
 
               // Skip if nodes or template not found
               if (!from || !to || !template) return null;
@@ -302,13 +302,13 @@ const Diagram: React.FC<DiagramProps> = ({
 
               const animationFlowStyle = template.animationFlowStyle || [];
               const animationFlowStyleSelected = animationFlowStyle.find(
-                (style) => link.data[style.key] === style.value
+                (style) => edge.data[style.key] === style.value
               );
 
               return (
                 <g
-                  key={`link-${index}`}
-                  onClick={() => handleLinkClick(link)}
+                  key={`edge-${index}`}
+                  onClick={() => handleEdgeClick(edge)}
                   style={{ cursor: "pointer" }}
                 >
                   <line
@@ -325,7 +325,7 @@ const Diagram: React.FC<DiagramProps> = ({
                     animationFlowStyleSelected && (
                       <g>
                         {/* Moving dash animation */}
-                        <g key={`link-flow-${index}`}>
+                        <g key={`edge-flow-${index}`}>
                           <line
                             x1={from.x}
                             y1={from.y}
@@ -474,10 +474,11 @@ const Diagram: React.FC<DiagramProps> = ({
 
       <LegendModal templates={templates} />
       <DetailsModal
+        templates={templates}
         nodes={nodes}
-        links={links}
+        edges={edges}
         selectedNode={selectedNode}
-        selectedLink={selectedLink}
+        selectedEdge={selectedEdge}
         modalOpen={modalOpen}
         setModalOpen={setModalOpen}
       />
@@ -488,7 +489,7 @@ const Diagram: React.FC<DiagramProps> = ({
 export default Diagram;
 
 interface LegendModalProps {
-  templates: (NodeTemplate | LinkTemplate)[];
+  templates: (NodeTemplate | EdgeTemplate)[];
 }
 const LegendModal: React.FC<LegendModalProps> = ({ templates }) => {
   const [legendOpen, setLegendOpen] = useState(false);
@@ -496,7 +497,7 @@ const LegendModal: React.FC<LegendModalProps> = ({ templates }) => {
     <Dialog
       open={legendOpen}
       onOpenChange={setLegendOpen}
-      direction="right"
+      direction="bottom-left"
       useOverlay={false}
     >
       <DialogTrigger asChild>
@@ -582,17 +583,17 @@ const LegendModal: React.FC<LegendModalProps> = ({ templates }) => {
             </div>
           </div>
 
-          {/* Link Templates Legend */}
+          {/* Edge Templates Legend */}
           <div>
-            <h3 className="text-lg font-medium mb-2">Links</h3>
+            <h3 className="text-lg font-medium mb-2">Edges</h3>
             <div className="space-y-3">
               {templates
-                .filter((template) => template.type === "link")
+                .filter((template) => template.type === "edge")
                 .map((template, index) => {
-                  const linkTemplate = template as LinkTemplate;
+                  const edgeTemplate = template as EdgeTemplate;
                   return (
                     <div
-                      key={`link-legend-${index}`}
+                      key={`edge-legend-${index}`}
                       className="flex items-center gap-3"
                     >
                       <div className="w-10 h-10 flex-shrink-0">
@@ -603,15 +604,15 @@ const LegendModal: React.FC<LegendModalProps> = ({ templates }) => {
                             x2={35}
                             y2={20}
                             stroke="#335577"
-                            strokeWidth={linkTemplate.lineWidth || 1}
+                            strokeWidth={edgeTemplate.lineWidth || 1}
                             strokeDasharray={
-                              linkTemplate.lineType === "dashed"
+                              edgeTemplate.lineType === "dashed"
                                 ? "4 2"
                                 : undefined
                             }
                           />
-                          {(linkTemplate.arrowType === "arrow" ||
-                            linkTemplate.arrowType === "arrowhead") && (
+                          {(edgeTemplate.arrowType === "arrow" ||
+                            edgeTemplate.arrowType === "arrowhead") && (
                             <polygon
                               points="35,20 30,17 30,23"
                               fill="#335577"
@@ -619,7 +620,7 @@ const LegendModal: React.FC<LegendModalProps> = ({ templates }) => {
                           )}
                         </svg>
                       </div>
-                      <span>{linkTemplate.name || linkTemplate.id}</span>
+                      <span>{edgeTemplate.name || edgeTemplate.id}</span>
                     </div>
                   );
                 })}
@@ -632,21 +633,26 @@ const LegendModal: React.FC<LegendModalProps> = ({ templates }) => {
 };
 
 interface DetailsModalProps {
+  templates: (NodeTemplate | EdgeTemplate)[];
   nodes: Node[];
-  links: Link[];
+  edges: Edge[];
   selectedNode: Node | null;
-  selectedLink: Link | null;
+  selectedEdge: Edge | null;
   modalOpen: boolean;
   setModalOpen: (open: boolean) => void;
 }
 const DetailsModal: React.FC<DetailsModalProps> = ({
+  templates,
   nodes,
-  links,
+  edges,
   selectedNode,
-  selectedLink,
+  selectedEdge,
   modalOpen,
   setModalOpen,
 }) => {
+  const nodeTemplate = templates.find(
+    (template) => template.id === selectedNode?.template_id
+  );
   return (
     <Dialog
       open={modalOpen}
@@ -658,16 +664,16 @@ const DetailsModal: React.FC<DetailsModalProps> = ({
         <DialogHeader>
           <DialogTitle>
             {selectedNode
-              ? `Node: ${selectedNode.label}`
-              : selectedLink
-              ? "Link Information"
+              ? `Node: ${nodeTemplate?.name} (${selectedNode.label})`
+              : selectedEdge
+              ? "Edge Information"
               : "Information"}
           </DialogTitle>
           <DialogDescription>
             {selectedNode
               ? "Node details and properties"
-              : selectedLink
-              ? "Link details and properties"
+              : selectedEdge
+              ? "Edge details and properties"
               : "Details"}
           </DialogDescription>
         </DialogHeader>
@@ -675,12 +681,41 @@ const DetailsModal: React.FC<DetailsModalProps> = ({
         <div className="grid gap-4 py-4">
           {selectedNode &&
             (() => {
-              const linkFrom = links.filter(
-                (link) => link.from === selectedNode.id
+              // Find incoming and outgoing edges
+              const edgesFrom = edges.filter(
+                (edge) => edge.from === selectedNode.id
               );
-              const linkTo = links.filter(
-                (link) => link.to === selectedNode.id
+              const edgesTo = edges.filter(
+                (edge) => edge.to === selectedNode.id
               );
+
+              // Find connected nodes
+              const previousNodes = edgesTo.map((edge) => {
+                const node = nodes.find((node) => node.id === edge.from);
+                const nodeTemplate = templates.find(
+                  (template) => template.id === node?.template_id
+                );
+                return {
+                  edgeId: edge.id,
+                  templateName: nodeTemplate?.name,
+                  nodeId: node?.id,
+                  nodeLabel: node?.label,
+                };
+              });
+
+              const nextNodes = edgesFrom.map((edge) => {
+                const node = nodes.find((node) => node.id === edge.to);
+                const nodeTemplate = templates.find(
+                  (template) => template.id === node?.template_id
+                );
+                return {
+                  edgeId: edge.id,
+                  templateName: nodeTemplate?.name,
+                  nodeId: node?.id,
+                  nodeLabel: node?.label,
+                };
+              });
+
               return (
                 <div className="space-y-2">
                   <div className="grid grid-cols-2 gap-2">
@@ -691,22 +726,38 @@ const DetailsModal: React.FC<DetailsModalProps> = ({
                     <span className="font-medium">Label:</span>
                     <span>{selectedNode.label}</span>
                   </div>
-                  {linkFrom.length > 0 && (
+
+                  {previousNodes.length > 0 && (
                     <div className="grid grid-cols-2 gap-2">
-                      <span className="font-medium">From:</span>
-                      <ul>
-                        {linkFrom.map((link) => (
-                          <li key={link.id}>{link.from}</li>
+                      <span className="font-medium">Previous Nodes:</span>
+                      <ul className="space-y-1">
+                        {previousNodes.map((item) => (
+                          <li key={item.edgeId} className="text-sm">
+                            <span className="font-medium">
+                              {item.nodeLabel}
+                            </span>
+                            <span className="text-gray-500 text-xs block">
+                              via {item.templateName} ({item.edgeId})
+                            </span>
+                          </li>
                         ))}
                       </ul>
                     </div>
                   )}
-                  {linkTo.length > 0 && (
+
+                  {nextNodes.length > 0 && (
                     <div className="grid grid-cols-2 gap-2">
-                      <span className="font-medium">To:</span>
-                      <ul>
-                        {linkTo.map((link) => (
-                          <li key={link.id}>{link.to}</li>
+                      <span className="font-medium">Next Nodes:</span>
+                      <ul className="space-y-1">
+                        {nextNodes.map((item) => (
+                          <li key={item.edgeId} className="text-sm">
+                            <span className="font-medium">
+                              {item.nodeLabel}
+                            </span>
+                            <span className="text-gray-500 text-xs block">
+                              via {item.templateName} ({item.edgeId})
+                            </span>
+                          </li>
                         ))}
                       </ul>
                     </div>
@@ -723,12 +774,12 @@ const DetailsModal: React.FC<DetailsModalProps> = ({
               );
             })()}
 
-          {selectedLink &&
+          {selectedEdge &&
             (() => {
               const nodeFrom = nodes.find(
-                (node) => node.id === selectedLink.from
+                (node) => node.id === selectedEdge.from
               );
-              const nodeTo = nodes.find((node) => node.id === selectedLink.to);
+              const nodeTo = nodes.find((node) => node.id === selectedEdge.to);
               return (
                 <div className="space-y-2">
                   <div className="grid grid-cols-2 gap-2">
@@ -739,11 +790,11 @@ const DetailsModal: React.FC<DetailsModalProps> = ({
                     <span className="font-medium">To:</span>
                     <span>{nodeTo?.label}</span>
                   </div>
-                  {Object.keys(selectedLink.data).length > 0 && (
+                  {Object.keys(selectedEdge.data).length > 0 && (
                     <div className="mt-4">
                       <span className="font-medium">Data:</span>
                       <div className="mt-2 p-2 bg-gray-100 rounded text-sm">
-                        <pre>{JSON.stringify(selectedLink.data, null, 2)}</pre>
+                        <pre>{JSON.stringify(selectedEdge.data, null, 2)}</pre>
                       </div>
                     </div>
                   )}
