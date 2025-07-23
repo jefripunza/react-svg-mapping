@@ -4,9 +4,46 @@ import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-const Dialog = ({ onOpenChange, ...props }: DialogPrimitive.DialogProps) => (
-  <DialogPrimitive.Root onOpenChange={onOpenChange} modal={true} {...props} />
-);
+type DialogDirection =
+  | "center"
+  | "top"
+  | "bottom"
+  | "left"
+  | "right"
+  | "top-left"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-right";
+
+const DialogDirectionContext = React.createContext<DialogDirection>("center");
+const DialogOverlayContext = React.createContext<boolean>(true);
+
+interface DialogProps extends DialogPrimitive.DialogProps {
+  useOverlay?: boolean;
+  direction?: DialogDirection;
+}
+
+const Dialog = ({
+  onOpenChange,
+  useOverlay = true,
+  direction = "center",
+  children,
+  ...props
+}: DialogProps) => {
+  return (
+    <DialogOverlayContext.Provider value={useOverlay}>
+      <DialogDirectionContext.Provider value={direction}>
+        <DialogPrimitive.Root
+          onOpenChange={onOpenChange}
+          modal={true}
+          {...props}
+        >
+          {children}
+        </DialogPrimitive.Root>
+      </DialogDirectionContext.Provider>
+    </DialogOverlayContext.Provider>
+  );
+};
 
 const DialogTrigger = DialogPrimitive.Trigger;
 
@@ -29,12 +66,18 @@ const DialogOverlay = React.forwardRef<
 ));
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
+interface DialogContentProps
+  extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
+  hideX?: boolean;
+}
+
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
-    hideX?: boolean;
-  }
+  DialogContentProps
 >(({ className, children, hideX, ...props }, ref) => {
+  // Get the useOverlay value from context
+  const useOverlay = React.useContext(DialogOverlayContext);
+  const direction = React.useContext(DialogDirectionContext);
   // Create a wrapper to prevent event propagation
   const handleContentClick = (e: React.MouseEvent) => {
     // Prevent click events from bubbling up to the dialog root
@@ -43,7 +86,7 @@ const DialogContent = React.forwardRef<
 
   return (
     <DialogPortal>
-      <DialogOverlay />
+      {useOverlay && <DialogOverlay />}
       <DialogPrimitive.Content
         ref={ref}
         className={cn(
@@ -57,7 +100,9 @@ const DialogContent = React.forwardRef<
         onPointerDown={(e) => e.stopPropagation()}
         {...props}
       >
-        <div className="max-h-[85vh] overflow-y-auto mt-6 p-2 bg-white">{children}</div>
+        <div className="max-h-[85vh] overflow-y-auto mt-6 p-2 bg-white">
+          {children}
+        </div>
         {!hideX && (
           <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
             <X className="h-4 w-4" />

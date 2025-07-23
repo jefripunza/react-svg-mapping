@@ -474,7 +474,7 @@ const Diagram: React.FC<DiagramProps> = ({
       <Dialog
         open={modalOpen}
         onOpenChange={setModalOpen}
-        //   useOverlay={false}
+        useOverlay={true}
       >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
