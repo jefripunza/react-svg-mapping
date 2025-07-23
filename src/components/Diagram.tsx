@@ -858,6 +858,49 @@ const ChatAiModal: React.FC<ChatAiModalProps> = ({}) => {
       direction="right"
       useOverlay={false}
       height={1000}
+      header={
+        <DialogHeader>
+          <DialogTitle>AI Chat Assistant</DialogTitle>
+          <DialogDescription>
+            Ask questions about the diagram or get help with analysis
+          </DialogDescription>
+        </DialogHeader>
+      }
+      footer={
+        <div className="border-t pt-4">
+          <div className="flex space-x-2">
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Type your message... (Press Enter to send)"
+              disabled={isLoading}
+              className="flex-1 p-2 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              rows={2}
+            />
+            <button
+              onClick={handleSendMessage}
+              disabled={!prompt.trim() || isLoading}
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22,2 15,22 11,13 2,9"></polygon>
+              </svg>
+            </button>
+          </div>
+        </div>
+      }
     >
       <DialogTrigger asChild>
         <button
@@ -880,13 +923,6 @@ const ChatAiModal: React.FC<ChatAiModalProps> = ({}) => {
         </button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[400px] h-[600px] flex flex-col">
-        <DialogHeader>
-          <DialogTitle>AI Chat Assistant</DialogTitle>
-          <DialogDescription>
-            Ask questions about the diagram or get help with analysis
-          </DialogDescription>
-        </DialogHeader>
-
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto space-y-4 py-4">
           {messages.length === 0 ? (
@@ -929,41 +965,6 @@ const ChatAiModal: React.FC<ChatAiModalProps> = ({}) => {
               </div>
             </div>
           )}
-        </div>
-
-        {/* Input Area */}
-        <div className="border-t pt-4">
-          <div className="flex space-x-2">
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Type your message... (Press Enter to send)"
-              disabled={isLoading}
-              className="flex-1 p-2 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-              rows={2}
-            />
-            <button
-              onClick={handleSendMessage}
-              disabled={!prompt.trim() || isLoading}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="22" y1="2" x2="11" y2="13"></line>
-                <polygon points="22,2 15,22 11,13 2,9"></polygon>
-              </svg>
-            </button>
-          </div>
         </div>
       </DialogContent>
     </Dialog>

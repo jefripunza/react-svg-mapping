@@ -188,6 +188,7 @@ const DialogContent = React.forwardRef<
         onPointerDown={(e) => useOverlay && e.stopPropagation()}
         {...props}
       >
+        {header}
         <div className="max-h-[85vh] overflow-y-auto mt-6 p-2 bg-white">
           {children}
         </div>
@@ -197,6 +198,7 @@ const DialogContent = React.forwardRef<
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
         )}
+        {footer}
       </DialogPrimitive.Content>
     </DialogPortal>
   );
