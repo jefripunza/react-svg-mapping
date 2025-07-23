@@ -242,12 +242,14 @@ export const nodes: Node[] = [
 export const links: Link[] = [
   // Main flow from Bendung
   {
+    id: "BT0-BT1",
     from: "BT0",
     to: "BT1",
     template_id: "saluran_primer",
     data: { flow_color: "off", flow_direction: "down" },
   },
   {
+    id: "BT1-BT3",
     from: "BT1",
     to: "BT3",
     template_id: "saluran_primer",
@@ -256,18 +258,21 @@ export const links: Link[] = [
 
   // Left side - Padanglampe distribution
   {
+    id: "BT3-BP12",
     from: "BT3",
     to: "BP12",
     template_id: "saluran_primer",
     data: { flow_direction: "left" },
   },
   {
+    id: "BP12-P15K",
     from: "BP12",
     to: "P15K",
     template_id: "saluran_sekunder_link",
     data: { flow_direction: "right" },
   },
   {
+    id: "P15K-BP11",
     from: "P15K",
     to: "BP11",
     template_id: "saluran_sekunder_link",
@@ -276,24 +281,28 @@ export const links: Link[] = [
 
   // Secondary distribution - Padanglampe
   {
+    id: "BP11-P31K",
     from: "BP11",
     to: "P31K",
     template_id: "saluran_tersier",
     data: { flow_direction: "right" },
   },
   {
+    id: "P31K-P41K",
     from: "P31K",
     to: "P41K",
     template_id: "saluran_tersier",
     data: { flow_direction: "right" },
   },
   {
+    id: "P41K-P51K",
     from: "P41K",
     to: "P51K",
     template_id: "saluran_tersier",
     data: { flow_direction: "right" },
   },
   {
+    id: "P51K-P61K",
     from: "P51K",
     to: "P61K",
     template_id: "saluran_tersier",
@@ -302,24 +311,28 @@ export const links: Link[] = [
 
   // Main distribution line
   {
+    id: "P61K-P55K",
     from: "P61K",
     to: "P55K",
     template_id: "saluran_sekunder_link",
     data: { flow_direction: "down-right" },
   },
   {
+    id: "P55K-P43K",
     from: "P55K",
     to: "P43K",
     template_id: "saluran_tersier",
     data: { flow_direction: "right" },
   },
   {
+    id: "P43K-P33K",
     from: "P43K",
     to: "P33K",
     template_id: "saluran_tersier",
     data: { flow_direction: "right" },
   },
   {
+    id: "P33K-P13K",
     from: "P33K",
     to: "P13K",
     template_id: "saluran_tersier",
@@ -328,36 +341,42 @@ export const links: Link[] = [
 
   // Right side distribution
   {
+    id: "BT3-P1Ka",
     from: "BT3",
     to: "P1Ka",
     template_id: "saluran_sekunder_link",
     data: { flow_direction: "down-right" },
   },
   {
+    id: "P1Ka-P1Kb",
     from: "P1Ka",
     to: "P1Kb",
     template_id: "saluran_tersier",
     data: { flow_direction: "right" },
   },
   {
+    id: "P1Kb-P2Ka",
     from: "P1Kb",
     to: "P2Ka",
     template_id: "saluran_tersier",
     data: { flow_direction: "right" },
   },
   {
+    id: "P2Ka-P2Kb",
     from: "P2Ka",
     to: "P2Kb",
     template_id: "saluran_tersier",
     data: { flow_direction: "right" },
   },
   {
+    id: "P2Kb-P3K",
     from: "P2Kb",
     to: "P3K",
     template_id: "saluran_tersier",
     data: { flow_direction: "right" },
   },
   {
+    id: "P3K-P4K",
     from: "P3K",
     to: "P4K",
     template_id: "saluran_tersier",
@@ -366,12 +385,14 @@ export const links: Link[] = [
 
   // Far right - Pangkajene
   {
+    id: "P4K-BP5",
     from: "P4K",
     to: "BP5",
     template_id: "saluran_sekunder_link",
     data: { flow_direction: "right" },
   },
   {
+    id: "BP5-BP46",
     from: "BP5",
     to: "BP46",
     template_id: "saluran_tersier",
