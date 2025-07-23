@@ -806,3 +806,8 @@ const DetailsModal: React.FC<DetailsModalProps> = ({
     </Dialog>
   );
 };
+
+interface ChatAiModalProps {}
+const ChatAiModal: React.FC<ChatAiModalProps> = ({}) => {
+  return <></>;
+};
