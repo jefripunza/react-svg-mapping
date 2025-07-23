@@ -150,24 +150,26 @@ const DialogContent = React.forwardRef<
   const positionStyles = getPositionStyles();
   const animationStyles = getAnimationStyles();
 
+  // Create style object for dynamic height and width
+  const sizeStyles = {
+    height: height ? `${height}px` : undefined,
+    width: width ? `${width}px` : undefined,
+    maxWidth: width ? `${width}px` : undefined,
+  };
+
   return (
     <DialogPortal>
       {useOverlay && <DialogOverlay />}
       <DialogPrimitive.Content
         ref={ref}
         className={cn(
-          `fixed ${positionStyles} z-50 grid w-full max-w-lg gap-4 border bg-white p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 ${animationStyles} sm:rounded-lg`,
+          "fixed z-9999 grid gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out",
+          positionStyles,
+          animationStyles,
           className
         )}
-        onPointerDownOutside={(e) => {
-          if (useOverlay) e.preventDefault();
-        }}
-        onInteractOutside={(e) => {
-          if (useOverlay) e.preventDefault();
-        }}
+        style={sizeStyles}
         onClick={handleContentClick}
-        onMouseDown={(e) => e.stopPropagation()}
-        onPointerDown={(e) => e.stopPropagation()}
         {...props}
       >
         <div className="max-h-[85vh] overflow-y-auto mt-6 p-2 bg-white">
