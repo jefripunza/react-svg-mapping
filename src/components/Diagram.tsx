@@ -5,8 +5,15 @@
  * Contact: jefriherditriyanto@gmail.com
  */
 
-import React from "react";
+import React, { useState } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "./ui/dialog";
 
 export type Direction =
   | "top"
@@ -121,6 +128,21 @@ const Diagram: React.FC<DiagramProps> = ({
   links,
   texts,
 }) => {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [selectedLink, setSelectedLink] = useState<Link | null>(null);
+
+  const handleNodeClick = (node: Node) => {
+    setSelectedNode(node);
+    setSelectedLink(null);
+    setModalOpen(true);
+  };
+
+  const handleLinkClick = (link: Link) => {
+    setSelectedLink(link);
+    setSelectedNode(null);
+    setModalOpen(true);
+  };
   // Helper functions
   const getNodeTemplate = (templateId: string): NodeTemplate | undefined => {
     return templates.find(
@@ -207,7 +229,7 @@ const Diagram: React.FC<DiagramProps> = ({
   };
 
   return (
-    <div className="zoom-container">
+    <div className="w-full h-full relative overflow-hidden bg-slate-300">
       <TransformWrapper
         initialScale={1}
         minScale={0.1}
@@ -282,7 +304,11 @@ const Diagram: React.FC<DiagramProps> = ({
               );
 
               return (
-                <g key={`link-${index}`}>
+                <g 
+                  key={`link-${index}`}
+                  onClick={() => handleLinkClick(link)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <line
                     x1={from.x}
                     y1={from.y}
@@ -343,7 +369,11 @@ const Diagram: React.FC<DiagramProps> = ({
               const textAnchor = getTextAnchor(node.labelDirection);
 
               return (
-                <g key={`node-${node.id}`} onClick={() => alert("ok")}>
+                <g 
+                  key={`node-${node.id}`} 
+                  onClick={() => handleNodeClick(node)}
+                  style={{ cursor: 'pointer' }}
+                >
                   {/* Render template objects */}
                   {template.objects.map((obj, objIndex) => {
                     const objProps = {
@@ -439,15 +469,78 @@ const Diagram: React.FC<DiagramProps> = ({
           </svg>
         </TransformComponent>
       </TransformWrapper>
+      
+      {/* Modal Dialog */}
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedNode ? `Node: ${selectedNode.label}` : selectedLink ? 'Link Information' : 'Information'}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedNode ? 'Node details and properties' : selectedLink ? 'Link details and properties' : 'Details'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            {selectedNode && (
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <span className="font-medium">ID:</span>
+                  <span>{selectedNode.id}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <span className="font-medium">Label:</span>
+                  <span>{selectedNode.label}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <span className="font-medium">Position:</span>
+                  <span>({selectedNode.x}, {selectedNode.y})</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <span className="font-medium">Template:</span>
+                  <span>{selectedNode.template_id}</span>
+                </div>
+                {Object.keys(selectedNode.data).length > 0 && (
+                  <div className="mt-4">
+                    <span className="font-medium">Data:</span>
+                    <div className="mt-2 p-2 bg-gray-100 rounded text-sm">
+                      <pre>{JSON.stringify(selectedNode.data, null, 2)}</pre>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {selectedLink && (
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <span className="font-medium">From:</span>
+                  <span>{selectedLink.from}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <span className="font-medium">To:</span>
+                  <span>{selectedLink.to}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <span className="font-medium">Template:</span>
+                  <span>{selectedLink.template_id}</span>
+                </div>
+                {Object.keys(selectedLink.data).length > 0 && (
+                  <div className="mt-4">
+                    <span className="font-medium">Data:</span>
+                    <div className="mt-2 p-2 bg-gray-100 rounded text-sm">
+                      <pre>{JSON.stringify(selectedLink.data, null, 2)}</pre>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
 
 export default Diagram;
-interface ModalProps {
-  node: Node;
-  link: Link;
-}
-const Modal: React.FC<ModalProps> = ({ node, link }) => {
-  return <></>;
-};
