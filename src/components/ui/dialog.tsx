@@ -175,7 +175,7 @@ const DialogContent = React.forwardRef<
       <DialogPrimitive.Content
         ref={ref}
         className={cn(
-          "fixed z-9999 grid gap-4 border bg-white p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out",
+          "fixed z-9999 flex flex-col border bg-white p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out",
           positionStyles,
           animationStyles,
           className
@@ -188,17 +188,23 @@ const DialogContent = React.forwardRef<
         onPointerDown={(e) => useOverlay && e.stopPropagation()}
         {...props}
       >
-        {header}
-        <div className="max-h-[85vh] overflow-y-auto mt-6 p-2 bg-white">
-          {children}
-        </div>
         {!hideX && (
           <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
             <X className="h-4 w-4" />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
         )}
-        {footer}
+        
+        {/* Header - Always at top */}
+        {header && <div className="mb-4">{header}</div>}
+        
+        {/* Content - Fills available space */}
+        <div className="flex-1 overflow-y-auto bg-white">
+          {children}
+        </div>
+        
+        {/* Footer - Always at bottom */}
+        {footer && <div className="mt-4">{footer}</div>}
       </DialogPrimitive.Content>
     </DialogPortal>
   );
