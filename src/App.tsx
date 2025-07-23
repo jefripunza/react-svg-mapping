@@ -5,7 +5,7 @@ import templates from "./template";
 function App() {
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden">
-      <header className="bg-lime-600 shadow-lg z-[1000] flex-shrink-0">
+      <header className="bg-lime-600 shadow-lg flex-shrink-0">
         <div className="flex justify-between items-center px-8 py-4 max-w-6xl mx-auto md:flex-col md:gap-4 md:px-4 md:py-3 sm:px-2 sm:py-2">
           <h1 className="text-white text-2xl font-semibold m-0 drop-shadow-md md:text-xl sm:text-lg">
             React SVG Mapping

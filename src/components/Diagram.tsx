@@ -304,10 +304,10 @@ const Diagram: React.FC<DiagramProps> = ({
               );
 
               return (
-                <g 
+                <g
                   key={`link-${index}`}
                   onClick={() => handleLinkClick(link)}
-                  style={{ cursor: 'pointer' }}
+                  style={{ cursor: "pointer" }}
                 >
                   <line
                     x1={from.x}
@@ -369,10 +369,10 @@ const Diagram: React.FC<DiagramProps> = ({
               const textAnchor = getTextAnchor(node.labelDirection);
 
               return (
-                <g 
-                  key={`node-${node.id}`} 
+                <g
+                  key={`node-${node.id}`}
                   onClick={() => handleNodeClick(node)}
-                  style={{ cursor: 'pointer' }}
+                  style={{ cursor: "pointer" }}
                 >
                   {/* Render template objects */}
                   {template.objects.map((obj, objIndex) => {
@@ -469,19 +469,31 @@ const Diagram: React.FC<DiagramProps> = ({
           </svg>
         </TransformComponent>
       </TransformWrapper>
-      
+
       {/* Modal Dialog */}
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+      <Dialog
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        //   useOverlay={false}
+      >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>
-              {selectedNode ? `Node: ${selectedNode.label}` : selectedLink ? 'Link Information' : 'Information'}
+              {selectedNode
+                ? `Node: ${selectedNode.label}`
+                : selectedLink
+                ? "Link Information"
+                : "Information"}
             </DialogTitle>
             <DialogDescription>
-              {selectedNode ? 'Node details and properties' : selectedLink ? 'Link details and properties' : 'Details'}
+              {selectedNode
+                ? "Node details and properties"
+                : selectedLink
+                ? "Link details and properties"
+                : "Details"}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid gap-4 py-4">
             {selectedNode && (
               <div className="space-y-2">
@@ -495,7 +507,9 @@ const Diagram: React.FC<DiagramProps> = ({
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <span className="font-medium">Position:</span>
-                  <span>({selectedNode.x}, {selectedNode.y})</span>
+                  <span>
+                    ({selectedNode.x}, {selectedNode.y})
+                  </span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <span className="font-medium">Template:</span>
@@ -511,7 +525,7 @@ const Diagram: React.FC<DiagramProps> = ({
                 )}
               </div>
             )}
-            
+
             {selectedLink && (
               <div className="space-y-2">
                 <div className="grid grid-cols-2 gap-2">
