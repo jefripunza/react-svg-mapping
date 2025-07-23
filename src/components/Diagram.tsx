@@ -140,6 +140,29 @@ const Diagram: React.FC<DiagramProps> = ({
   // Referensi untuk TransformWrapper
   const transformComponentRef = useRef<ReactZoomPanPinchRef | null>(null);
 
+  // Menghitung ukuran SVG berdasarkan koordinat node terbesar
+  const calculateSvgSize = () => {
+    if (nodes.length === 0) return { width: 2000, height: 2000 };
+    
+    // Cari koordinat x dan y terbesar dari semua node
+    let maxX = 0;
+    let maxY = 0;
+    
+    nodes.forEach(node => {
+      if (node.x > maxX) maxX = node.x;
+      if (node.y > maxY) maxY = node.y;
+    });
+    
+    // Tambahkan padding 100px
+    return {
+      width: maxX + 100,
+      height: maxY + 100
+    };
+  };
+  
+  // Hitung ukuran SVG
+  const svgSize = calculateSvgSize();
+  
   // Auto-focus ke node pertama saat diagram dimuat
   useEffect(() => {
     if (nodes.length > 0 && transformComponentRef.current) {
@@ -285,12 +308,16 @@ const Diagram: React.FC<DiagramProps> = ({
           contentStyle={{
             width: "100%",
             height: "100%",
-            minWidth: "5000px", // Memastikan area konten cukup besar
-            minHeight: "5000px",
+            minWidth: `${svgSize.width}px`, // Ukuran dinamis berdasarkan node terbesar
+            minHeight: `${svgSize.height}px`,
             // background: "#cbd5e1",
           }}
         >
-          <svg width="5000" height="5000" viewBox="0 0 5000 5000">
+          <svg 
+            width={svgSize.width} 
+            height={svgSize.height} 
+            viewBox={`0 0 ${svgSize.width} ${svgSize.height}`}
+          >
             {/* Define patterns for dashed/dotted lines */}
             <defs>
               <pattern
