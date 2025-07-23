@@ -7,6 +7,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import type { ReactZoomPanPinchRef } from "react-zoom-pan-pinch";
 import {
   Dialog,
   DialogContent,
@@ -136,6 +137,29 @@ const Diagram: React.FC<DiagramProps> = ({
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
+  // Referensi untuk TransformWrapper
+  const transformComponentRef = useRef<ReactZoomPanPinchRef | null>(null);
+
+  // Auto-focus ke node pertama saat diagram dimuat
+  useEffect(() => {
+    if (nodes.length > 0 && transformComponentRef.current) {
+      // Ambil koordinat node pertama
+      const firstNode = nodes[0];
+      const x = firstNode.x;
+      const y = firstNode.y;
+
+      // Berikan sedikit delay untuk memastikan komponen sudah sepenuhnya dimuat
+      setTimeout(() => {
+        transformComponentRef.current?.setTransform(
+          // Posisikan node di tengah viewport
+          window.innerWidth / 2 - x,
+          window.innerHeight / 2 - y - 200,
+          1 // Scale awal
+        );
+      }, 100);
+    }
+  }, [nodes]);
+
   const handleNodeClick = (node: Node) => {
     setSelectedNode(node);
     setSelectedEdge(null);
@@ -235,9 +259,10 @@ const Diagram: React.FC<DiagramProps> = ({
   return (
     <div className="w-full h-full relative overflow-hidden bg-slate-300">
       <TransformWrapper
+        ref={transformComponentRef}
         initialScale={1}
         minScale={0.1}
-        maxScale={3}
+        maxScale={5}
         centerOnInit={true}
         limitToBounds={false}
         panning={{
@@ -246,20 +271,26 @@ const Diagram: React.FC<DiagramProps> = ({
         }}
         wheel={{
           disabled: false,
+          step: 0.2,
         }}
+        alignmentAnimation={{ sizeX: 0, sizeY: 0 }}
+        zoomAnimation={{ disabled: false }}
       >
         <TransformComponent
           wrapperStyle={{
             width: "100%",
             height: "100%",
+            overflow: "visible", // Penting: Memungkinkan konten melebihi batas wrapper
           }}
           contentStyle={{
             width: "100%",
             height: "100%",
+            minWidth: "5000px", // Memastikan area konten cukup besar
+            minHeight: "5000px",
             // background: "#cbd5e1",
           }}
         >
-          <svg width="2000" height="2000">
+          <svg width="5000" height="5000" viewBox="0 0 5000 5000">
             {/* Define patterns for dashed/dotted lines */}
             <defs>
               <pattern
