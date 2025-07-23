@@ -162,11 +162,13 @@ const DialogContent = React.forwardRef<
   const positionStyles = getPositionStyles();
   const animationStyles = getAnimationStyles();
 
-  // Create style object for dynamic height and width
+  // Create style object for dynamic height and width with responsive handling
   const sizeStyles = {
-    height: height ? `${height}px` : undefined,
-    width: width ? `${width}px` : undefined,
-    maxWidth: width ? `${width}px` : undefined,
+    height: height ? `min(${height}px, 90vh)` : undefined,
+    width: width ? `min(${width}px, 90vw)` : undefined,
+    maxWidth: width ? `min(${width}px, 90vw)` : undefined,
+    maxHeight: height ? `min(${height}px, 90vh)` : undefined,
+    overflow: 'auto',
   };
 
   return (

@@ -533,6 +533,14 @@ const LegendModal: React.FC<LegendModalProps> = ({ templates }) => {
       onOpenChange={setLegendOpen}
       direction="bottom-left"
       useOverlay={false}
+      header={
+        <DialogHeader>
+          <DialogTitle>Legend</DialogTitle>
+          <DialogDescription>
+            Diagram elements and their meanings
+          </DialogDescription>
+        </DialogHeader>
+      }
     >
       <DialogTrigger asChild>
         <button
@@ -556,13 +564,6 @@ const LegendModal: React.FC<LegendModalProps> = ({ templates }) => {
         </button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[300px]">
-        <DialogHeader>
-          <DialogTitle>Legend</DialogTitle>
-          <DialogDescription>
-            Diagram elements and their meanings
-          </DialogDescription>
-        </DialogHeader>
-
         <div className="space-y-6">
           {/* Node Templates Legend */}
           <div>
