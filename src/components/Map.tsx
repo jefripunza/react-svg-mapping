@@ -149,6 +149,49 @@ export default function MapComponent() {
     return legendContainer;
   };
 
+  // Function to extract color from ArcGIS symbol
+  const extractColorFromSymbol = (symbol: any): number[] => {
+    console.log("Extracting color from symbol:", symbol);
+    
+    // For ArcGIS symbols, color might be stored differently
+    let color = null;
+    
+    if (symbol.color) {
+      if (Array.isArray(symbol.color)) {
+        color = symbol.color;
+      } else if (symbol.color.r !== undefined) {
+        // ArcGIS Color object format
+        color = [symbol.color.r, symbol.color.g, symbol.color.b, symbol.color.a || 1];
+      } else if (typeof symbol.color === 'string') {
+        // Handle hex colors or named colors
+        console.log("String color detected:", symbol.color);
+        return [128, 128, 128, 1]; // Default gray for now
+      }
+    }
+    
+    console.log("Extracted color:", color);
+    return color || [128, 128, 128, 1]; // Default gray
+  };
+  
+  // Function to extract outline color from ArcGIS symbol
+  const extractOutlineColorFromSymbol = (symbol: any): number[] => {
+    console.log("Extracting outline color from symbol:", symbol);
+    
+    let outlineColor = null;
+    
+    if (symbol.outline && symbol.outline.color) {
+      if (Array.isArray(symbol.outline.color)) {
+        outlineColor = symbol.outline.color;
+      } else if (symbol.outline.color.r !== undefined) {
+        // ArcGIS Color object format
+        outlineColor = [symbol.outline.color.r, symbol.outline.color.g, symbol.outline.color.b, symbol.outline.color.a || 1];
+      }
+    }
+    
+    console.log("Extracted outline color:", outlineColor);
+    return outlineColor || [0, 0, 0, 1]; // Default black
+  };
+
   // Function to add legend item
   const addLegendItem = (
     container: HTMLDivElement,
@@ -168,26 +211,18 @@ export default function MapComponent() {
     symbolDiv.style.border = "1px solid #ccc";
 
     if (type === "point") {
-      const color = symbol.color || [255, 0, 0, 1];
-      symbolDiv.style.backgroundColor = `rgba(${color[0]}, ${color[1]}, ${
-        color[2]
-      }, ${color[3] || 1})`;
+      const color = extractColorFromSymbol(symbol);
+      symbolDiv.style.backgroundColor = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3] || 1})`;
       symbolDiv.style.borderRadius = "50%";
     } else if (type === "polygon") {
-      const color = symbol.color || [0, 255, 0, 0.5];
-      symbolDiv.style.backgroundColor = `rgba(${color[0]}, ${color[1]}, ${
-        color[2]
-      }, ${color[3] || 0.5})`;
-      const outline = symbol.outline?.color || [0, 128, 0, 1];
-      symbolDiv.style.borderColor = `rgba(${outline[0]}, ${outline[1]}, ${
-        outline[2]
-      }, ${outline[3] || 1})`;
+      const color = extractColorFromSymbol(symbol);
+      const outline = extractOutlineColorFromSymbol(symbol);
+      symbolDiv.style.backgroundColor = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3] || 0.5})`;
+      symbolDiv.style.borderColor = `rgba(${outline[0]}, ${outline[1]}, ${outline[2]}, ${outline[3] || 1})`;
       symbolDiv.style.borderWidth = "2px";
     } else if (type === "polyline") {
-      const color = symbol.color || [0, 0, 255, 1];
-      symbolDiv.style.backgroundColor = `rgba(${color[0]}, ${color[1]}, ${
-        color[2]
-      }, ${color[3] || 1})`;
+      const color = extractColorFromSymbol(symbol);
+      symbolDiv.style.backgroundColor = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3] || 1})`;
       symbolDiv.style.height = "3px";
     }
 
