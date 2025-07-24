@@ -223,7 +223,9 @@ export default function MapComponent() {
     } else if (type === "polyline") {
       const color = extractColorFromSymbol(symbol);
       symbolDiv.style.backgroundColor = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3] || 1})`;
-      symbolDiv.style.height = "3px";
+      symbolDiv.style.height = "8px"; // Make line thicker so color is more visible
+      symbolDiv.style.border = "none"; // Remove border for cleaner look
+      symbolDiv.style.borderRadius = "2px"; // Add slight rounding for better appearance
     }
 
     const label = document.createElement("span");
