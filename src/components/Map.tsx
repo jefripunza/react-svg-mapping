@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // Import ArcGIS modules
 import Map from "@arcgis/core/Map";
@@ -62,6 +62,7 @@ export default function MapComponent() {
   const refreshIntervalRef = useRef<number | null>(null);
   const polygonTransparencyRef = useRef<HTMLDivElement>(null);
   const currentPolygonGraphicRef = useRef<Graphic | null>(null);
+  const firstTimeFetch = useRef(true);
 
   // Function to update polygon transparency
   const updatePolygonTransparency = (transparency: number) => {
@@ -291,7 +292,7 @@ export default function MapComponent() {
         });
 
         // If we found a feature with is_center=true, center the map on it
-        if (centerFeature) {
+        if (centerFeature && firstTimeFetch.current) {
           const centerCoords = getCenterFromGeometry(centerFeature);
           if (centerCoords) {
             view.goTo({
@@ -303,6 +304,8 @@ export default function MapComponent() {
       }
     } catch (error) {
       console.error("Error fetching map data:", error);
+    } finally {
+      firstTimeFetch.current = false;
     }
   };
 
