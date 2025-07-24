@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 // Import ArcGIS modules
 import Map from "@arcgis/core/Map";
@@ -39,20 +39,35 @@ interface FeatureSymbol {
   };
   width?: number;
 }
-interface MapFeature {
+interface MapFeaturePoint {
   id: string;
-  is_center?: boolean;
-  type: "point" | "polygon" | "polyline";
-  geometry:
-    | FeatureGeometryPoint
-    | FeatureGeometryPolygon
-    | FeatureGeometryPolyline;
+  type: "point";
+  geometry: FeatureGeometryPoint;
   symbol?: FeatureSymbol;
   attributes?: Record<string, unknown>;
 }
-
+interface MapFeaturePolygon {
+  id: string;
+  type: "polygon";
+  geometry: FeatureGeometryPolygon;
+  symbol?: FeatureSymbol;
+  attributes?: Record<string, unknown>;
+}
+interface MapFeaturePolyline {
+  id: string;
+  type: "polyline";
+  geometry: FeatureGeometryPolyline;
+  symbol?: FeatureSymbol;
+  attributes?: Record<string, unknown>;
+}
+interface MapDataView {
+  longitude: number;
+  latitude: number;
+  zoom: number;
+}
 interface MapData {
-  features?: MapFeature[];
+  view: MapDataView;
+  features?: MapFeaturePoint[] | MapFeaturePolygon[] | MapFeaturePolyline[];
 }
 
 export default function MapComponent() {
@@ -92,7 +107,7 @@ export default function MapComponent() {
 
   // Function to get center coordinates from a feature geometry
   const getCenterFromGeometry = (
-    feature: MapFeature
+    feature: MapFeaturePoint | MapFeaturePolygon | MapFeaturePolyline
   ): [number, number] | null => {
     if (
       feature.type === "point" &&
@@ -150,18 +165,10 @@ export default function MapComponent() {
         currentPolygonGraphicRef.current = null;
       }
 
-      // Track if we find a feature with is_center=true
-      let centerFeature: MapFeature | null = null;
-
       // Process and add features if they exist
       if (data.features && data.features.length > 0) {
         data.features.forEach((feature) => {
           let graphic: Graphic | null = null;
-
-          // Check if this feature should be used as the map center
-          if (feature.is_center === true) {
-            centerFeature = feature;
-          }
 
           // Create the appropriate geometry based on feature type
           if (feature.type === "point") {
@@ -292,14 +299,12 @@ export default function MapComponent() {
         });
 
         // If we found a feature with is_center=true, center the map on it
-        if (centerFeature && firstTimeFetch.current) {
-          const centerCoords = getCenterFromGeometry(centerFeature);
-          if (centerCoords) {
-            view.goTo({
-              center: centerCoords,
-              zoom: view.zoom, // Maintain current zoom level
-            });
-          }
+        if (data.view && firstTimeFetch.current) {
+          console.log(data.view);
+          view.goTo({
+            center: [data.view.longitude, data.view.latitude],
+            zoom: data.view.zoom, // Maintain current zoom level
+          });
         }
       }
     } catch (error) {
@@ -321,7 +326,7 @@ export default function MapComponent() {
       const view = new MapView({
         container: mapRef.current,
         map: map,
-        zoom: 15,
+        zoom: 6,
         center: [108.6075, -6.7034], // Bendung Rentang, Cirebon coordinates
         popup: {
           dockEnabled: true,
@@ -415,7 +420,9 @@ export default function MapComponent() {
         polygonTransparencyRef.current = sliderContainer;
 
         // Initial data fetch
-        fetchMapData(view);
+        setTimeout(() => {
+          fetchMapData(view);
+        }, 1000);
 
         // Set up auto-refresh every 10 seconds
         refreshIntervalRef.current = window.setInterval(() => {

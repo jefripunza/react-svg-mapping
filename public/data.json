@@ -1,16 +1,16 @@
 {
+  "view": {
+    "longitude": 108.314245,
+    "latitude": -6.540088,
+    "zoom": 11
+  },
   "features": [
     {
       "id": "point1",
-      "is_center": true,
       "type": "point",
       "geometry": {
         "longitude": 108.220901,
         "latitude": -6.662524
-      },
-      "attributes": {
-        "name": "Bendung Rentang",
-        "description": "Main dam structure in Cirebon"
       },
       "symbol": {
         "type": "simple-marker",
@@ -21,6 +21,10 @@
           "color": "white",
           "width": 2
         }
+      },
+      "attributes": {
+        "name": "Bendung Rentang",
+        "description": "Main dam structure in Cirebon"
       }
     },
     {
@@ -38,16 +42,17 @@
         ],
         "spatialReference": { "wkid": 4326 }
       },
-      "attributes": {
-        "name": "Main Dam Structure",
-        "description": "The main structure of Bendung Rentang"
-      },
       "symbol": {
+        "type": "simple-fill",
         "color": [50, 205, 50, 0.5],
         "outline": {
           "color": [0, 128, 0, 1],
           "width": 2
         }
+      },
+      "attributes": {
+        "name": "Main Dam Structure",
+        "description": "The main structure of Bendung Rentang"
       }
     },
     {
@@ -64,13 +69,14 @@
         ],
         "spatialReference": { "wkid": 4326 }
       },
+      "symbol": {
+        "type": "simple-line",
+        "color": [0, 0, 255, 1],
+        "width": 3
+      },
       "attributes": {
         "name": "Irrigation Channel",
         "description": "Water flow from Bendung Rentang"
-      },
-      "symbol": {
-        "color": [0, 0, 255, 1],
-        "width": 3
       }
     }
   ]
