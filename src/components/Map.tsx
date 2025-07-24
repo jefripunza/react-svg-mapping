@@ -21,6 +21,7 @@ interface MapFeature {
   id: string;
   is_center?: boolean;
   type: "point" | "polygon" | "polyline";
+  color: number[];
   geometry: any;
   symbol?: any;
   attributes?: Record<string, any>;
@@ -68,6 +69,48 @@ export default function MapComponent() {
     }
   };
 
+  // Function to get center coordinates from a feature geometry
+  const getCenterFromGeometry = (
+    feature: MapFeature
+  ): [number, number] | null => {
+    if (
+      feature.type === "point" &&
+      feature.geometry.longitude !== undefined &&
+      feature.geometry.latitude !== undefined
+    ) {
+      // For point features, use the point coordinates directly
+      return [feature.geometry.longitude, feature.geometry.latitude];
+    } else if (
+      feature.type === "polygon" &&
+      feature.geometry.rings &&
+      feature.geometry.rings.length > 0
+    ) {
+      // For polygon features, calculate the centroid of the first ring
+      const ring = feature.geometry.rings[0];
+      if (ring && ring.length > 0) {
+        let sumX = 0;
+        let sumY = 0;
+        ring.forEach((coord: [number, number]) => {
+          sumX += coord[0];
+          sumY += coord[1];
+        });
+        return [sumX / ring.length, sumY / ring.length];
+      }
+    } else if (
+      feature.type === "polyline" &&
+      feature.geometry.paths &&
+      feature.geometry.paths.length > 0
+    ) {
+      // For polyline features, use the midpoint of the first path
+      const path = feature.geometry.paths[0];
+      if (path && path.length > 0) {
+        const midIndex = Math.floor(path.length / 2);
+        return path[midIndex];
+      }
+    }
+    return null;
+  };
+
   // Function to fetch data from data.json
   const fetchMapData = async (view: MapView) => {
     try {
@@ -83,10 +126,18 @@ export default function MapComponent() {
         currentPolygonGraphicRef.current = null;
       }
 
+      // Track if we find a feature with is_center=true
+      let centerFeature: MapFeature | null = null;
+
       // Process and add features if they exist
       if (data.features && data.features.length > 0) {
         data.features.forEach((feature) => {
           let graphic: Graphic | null = null;
+
+          // Check if this feature should be used as the map center
+          if (feature.is_center === true) {
+            centerFeature = feature;
+          }
 
           // Create the appropriate geometry based on feature type
           if (feature.type === "point") {
@@ -155,6 +206,17 @@ export default function MapComponent() {
             graphicsLayerRef.current.push(graphic);
           }
         });
+
+        // If we found a feature with is_center=true, center the map on it
+        if (centerFeature) {
+          const centerCoords = getCenterFromGeometry(centerFeature);
+          if (centerCoords) {
+            view.goTo({
+              center: centerCoords,
+              zoom: view.zoom, // Maintain current zoom level
+            });
+          }
+        }
       }
     } catch (error) {
       console.error("Error fetching map data:", error);
