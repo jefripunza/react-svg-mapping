@@ -16,19 +16,39 @@ import Legend from "@arcgis/core/widgets/Legend";
 // Import CSS for ArcGIS API
 import "@arcgis/core/assets/esri/themes/light/main.css";
 
-// Interface for map data from data.json
+interface FeatureGeometryPoint {
+  longitude: number;
+  latitude: number;
+}
+interface FeatureGeometryPolygon {
+  rings: number[][][];
+}
+interface FeatureGeometryPolyline {
+  paths: number[][][];
+}
+interface FeatureSymbol {
+  color: number[];
+
+  // extra properties
+  type?: string;
+  style?: string;
+  size?: number;
+  outline?: {
+    color: number[];
+    width: number;
+  };
+  width?: number;
+}
 interface MapFeature {
   id: string;
   is_center?: boolean;
   type: "point" | "polygon" | "polyline";
-  color: number[];
-  geometry: any;
-  symbol?: any;
-  attributes?: Record<string, any>;
-  popupTemplate?: {
-    title: string;
-    content: string | string[];
-  };
+  geometry:
+    | FeatureGeometryPoint
+    | FeatureGeometryPolygon
+    | FeatureGeometryPolyline;
+  symbol?: FeatureSymbol;
+  attributes?: Record<string, unknown>;
 }
 
 interface MapData {
@@ -75,37 +95,40 @@ export default function MapComponent() {
   ): [number, number] | null => {
     if (
       feature.type === "point" &&
-      feature.geometry.longitude !== undefined &&
-      feature.geometry.latitude !== undefined
+      (feature.geometry as FeatureGeometryPoint).longitude !== undefined &&
+      (feature.geometry as FeatureGeometryPoint).latitude !== undefined
     ) {
       // For point features, use the point coordinates directly
-      return [feature.geometry.longitude, feature.geometry.latitude];
+      return [
+        (feature.geometry as FeatureGeometryPoint).longitude,
+        (feature.geometry as FeatureGeometryPoint).latitude,
+      ];
     } else if (
       feature.type === "polygon" &&
-      feature.geometry.rings &&
-      feature.geometry.rings.length > 0
+      (feature.geometry as FeatureGeometryPolygon).rings &&
+      (feature.geometry as FeatureGeometryPolygon).rings.length > 0
     ) {
       // For polygon features, calculate the centroid of the first ring
-      const ring = feature.geometry.rings[0];
-      if (ring && ring.length > 0) {
+      const rings = (feature.geometry as FeatureGeometryPolygon).rings[0];
+      if (rings && rings.length > 0) {
         let sumX = 0;
         let sumY = 0;
-        ring.forEach((coord: [number, number]) => {
-          sumX += coord[0];
-          sumY += coord[1];
+        rings.forEach((ring: number[]) => {
+          sumX += ring[0];
+          sumY += ring[1];
         });
-        return [sumX / ring.length, sumY / ring.length];
+        return [sumX / rings.length, sumY / rings.length];
       }
     } else if (
       feature.type === "polyline" &&
-      feature.geometry.paths &&
-      feature.geometry.paths.length > 0
+      (feature.geometry as FeatureGeometryPolyline).paths &&
+      (feature.geometry as FeatureGeometryPolyline).paths.length > 0
     ) {
       // For polyline features, use the midpoint of the first path
-      const path = feature.geometry.paths[0];
-      if (path && path.length > 0) {
-        const midIndex = Math.floor(path.length / 2);
-        return path[midIndex];
+      const paths = (feature.geometry as FeatureGeometryPolyline).paths[0];
+      if (paths && paths.length > 0) {
+        const midIndex = Math.floor(paths.length / 2);
+        return paths[midIndex] as [number, number];
       }
     }
     return null;
@@ -141,62 +164,122 @@ export default function MapComponent() {
 
           // Create the appropriate geometry based on feature type
           if (feature.type === "point") {
-            const point = new Point(feature.geometry);
-            const symbol =
-              feature.symbol ||
+            const point = new Point(feature.geometry as FeatureGeometryPoint);
+
+            // Use color from feature if available, otherwise use default or symbol
+            let symbolColor: string | number[] = "red";
+            if (
+              feature.symbol?.color &&
+              Array.isArray(feature.symbol.color) &&
+              feature.symbol.color.length >= 3
+            ) {
+              // Use the color array from the feature with opacity
+              symbolColor =
+                feature.symbol.color.length === 4
+                  ? feature.symbol.color
+                  : [...feature.symbol.color, 1]; // Add opacity if not provided
+            }
+
+            const symbol = (feature.symbol ||
               new SimpleMarkerSymbol({
                 style: "circle",
                 size: 12,
-                color: "red",
+                color: symbolColor,
                 outline: { color: "white", width: 2 },
-              });
+              })) as SimpleMarkerSymbol;
 
             graphic = new Graphic({
               geometry: point,
               symbol,
               attributes: feature.attributes || { id: feature.id },
-              popupTemplate: feature.popupTemplate || {
-                title: feature.attributes?.name || "Point",
-                content: feature.attributes?.description || "Point feature",
+              popupTemplate: {
+                title: (feature.attributes?.name || "Point") as string,
+                content: (feature.attributes?.description ||
+                  "Point feature") as string,
               },
             });
           } else if (feature.type === "polygon") {
-            const polygon = new Polygon(feature.geometry);
-            const symbol =
-              feature.symbol ||
+            const polygon = new Polygon(
+              feature.geometry as FeatureGeometryPolygon
+            );
+
+            // Use color from feature if available, otherwise use default
+            let fillColor = [50, 205, 50, 0.5]; // Default lime color with 0.5 opacity
+            let outlineColor = [0, 128, 0, 1];
+
+            if (
+              feature.symbol?.color &&
+              Array.isArray(feature.symbol.color) &&
+              feature.symbol.color.length >= 3
+            ) {
+              // Use the color array from the feature with opacity
+              fillColor =
+                feature.symbol.color.length === 4
+                  ? feature.symbol.color
+                  : [...feature.symbol.color, 0.5]; // Add default opacity if not provided
+
+              // Create a darker version of the color for the outline
+              outlineColor = [
+                Math.max(0, fillColor[0] - 50),
+                Math.max(0, fillColor[1] - 50),
+                Math.max(0, fillColor[2] - 50),
+                1,
+              ];
+            }
+
+            const symbol = (feature.symbol ||
               new SimpleFillSymbol({
-                color: [50, 205, 50, 0.5], // Default lime color with 0.5 opacity
-                outline: { color: [0, 128, 0, 1], width: 2 },
-              });
+                color: fillColor,
+                outline: { color: outlineColor, width: 2 },
+              })) as SimpleFillSymbol;
 
             graphic = new Graphic({
               geometry: polygon,
               symbol,
               attributes: feature.attributes || { id: feature.id },
-              popupTemplate: feature.popupTemplate || {
-                title: feature.attributes?.name || "Polygon",
-                content: feature.attributes?.description || "Polygon feature",
+              popupTemplate: {
+                title: (feature.attributes?.name || "Polygon") as string,
+                content: (feature.attributes?.description ||
+                  "Polygon feature") as string,
               },
             });
 
             // Store reference to polygon graphic for transparency control
             currentPolygonGraphicRef.current = graphic;
           } else if (feature.type === "polyline") {
-            const polyline = new Polyline(feature.geometry);
-            const symbol =
-              feature.symbol ||
+            const polyline = new Polyline(
+              feature.geometry as FeatureGeometryPolyline
+            );
+
+            // Use color from feature if available, otherwise use default
+            let lineColor = [0, 0, 255, 1]; // Default blue color
+
+            if (
+              feature.symbol?.color &&
+              Array.isArray(feature.symbol.color) &&
+              feature.symbol.color.length >= 3
+            ) {
+              // Use the color array from the feature with opacity
+              lineColor =
+                feature.symbol.color.length === 4
+                  ? feature.symbol.color
+                  : [...feature.symbol.color, 1]; // Add full opacity if not provided
+            }
+
+            const symbol = (feature.symbol ||
               new SimpleLineSymbol({
-                color: [0, 0, 255, 1], // Blue color
+                color: lineColor,
                 width: 3,
-              });
+              })) as SimpleLineSymbol;
 
             graphic = new Graphic({
               geometry: polyline,
               symbol,
               attributes: feature.attributes || { id: feature.id },
-              popupTemplate: feature.popupTemplate || {
-                title: feature.attributes?.name || "Line",
-                content: feature.attributes?.description || "Line feature",
+              popupTemplate: {
+                title: (feature.attributes?.name || "Line") as string,
+                content: (feature.attributes?.description ||
+                  "Line feature") as string,
               },
             });
           }
