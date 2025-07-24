@@ -78,6 +78,30 @@
         "name": "Irrigation Channel",
         "description": "Water flow from Bendung Rentang"
       }
+    },
+    {
+      "id": "polyline2",
+      "type": "polyline",
+      "geometry": {
+        "paths": [
+          [
+            [108.221901, -6.663524],
+            [108.222901, -6.663524],
+            [108.223901, -6.664524],
+            [108.224901, -6.665524]
+          ]
+        ],
+        "spatialReference": { "wkid": 4326 }
+      },
+      "symbol": {
+        "type": "simple-line",
+        "color": [0, 0, 255, 1],
+        "width": 3
+      },
+      "attributes": {
+        "name": "Tersier",
+        "description": "Tersier irrigation channel"
+      }
     }
   ]
 }

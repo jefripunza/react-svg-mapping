@@ -11,7 +11,7 @@ import SimpleMarkerSymbol from "@arcgis/core/symbols/SimpleMarkerSymbol";
 import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol";
 import SimpleLineSymbol from "@arcgis/core/symbols/SimpleLineSymbol";
 import Search from "@arcgis/core/widgets/Search";
-import Legend from "@arcgis/core/widgets/Legend";
+import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 
 // Import CSS for ArcGIS API
 import "@arcgis/core/assets/esri/themes/light/main.css";
@@ -73,81 +73,165 @@ interface MapData {
 export default function MapComponent() {
   const mapRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<MapView | null>(null);
-  const graphicsLayerRef = useRef<Graphic[]>([]);
+  const graphicsLayerRef = useRef<GraphicsLayer | null>(null);
+  const pointGraphicsRef = useRef<Graphic[]>([]);
+  const polygonGraphicsRef = useRef<Graphic[]>([]);
+  const polylineGraphicsRef = useRef<Graphic[]>([]);
   const refreshIntervalRef = useRef<number | null>(null);
   const polygonTransparencyRef = useRef<HTMLDivElement>(null);
-  const currentPolygonGraphicRef = useRef<Graphic | null>(null);
+  const legendRef = useRef<HTMLDivElement | null>(null);
   const firstTimeFetch = useRef(true);
+  const currentTransparencyValue = useRef<number>(0.5); // Default transparency value
 
-  // Function to update polygon transparency
+  // Function to update polygon transparency for all polygon graphics
   const updatePolygonTransparency = (transparency: number) => {
-    if (currentPolygonGraphicRef.current && viewRef.current) {
-      const graphic = currentPolygonGraphicRef.current;
-      const symbol = graphic.symbol as SimpleFillSymbol;
+    console.log("Updating polygon transparency to:", transparency);
+    console.log(
+      "Number of polygons to update:",
+      polygonGraphicsRef.current.length
+    );
 
-      if (symbol) {
-        // Get the current color
-        const color = symbol.color as any;
-        if (color && Array.isArray(color)) {
-          // Create a new color array with updated transparency
-          const newColor = [...color.slice(0, 3), transparency];
+    currentTransparencyValue.current = transparency;
 
-          // Create a new symbol with the updated color
-          const newSymbol = new SimpleFillSymbol({
-            color: newColor,
-            outline: symbol.outline,
-          });
+    if (polygonGraphicsRef.current.length > 0) {
+      // Update all polygon graphics
+      polygonGraphicsRef.current.forEach((graphic, index) => {
+        const symbol = graphic.symbol as SimpleFillSymbol;
 
-          // Update the graphic's symbol
-          graphic.symbol = newSymbol;
+        if (symbol) {
+          // Get the current color
+          const color = symbol.color as any;
+          if (color && Array.isArray(color)) {
+            // Create a new color array with updated transparency
+            const newColor = [...color.slice(0, 3), transparency];
+
+            console.log(
+              `Updating polygon ${index} color from`,
+              color,
+              "to",
+              newColor
+            );
+
+            // Create a new symbol with the updated color
+            const newSymbol = new SimpleFillSymbol({
+              color: newColor,
+              outline: symbol.outline,
+            });
+
+            // Update the graphic's symbol
+            graphic.symbol = newSymbol;
+          }
         }
-      }
+      });
+
+      // Graphics should update automatically when symbol is changed
+    } else {
+      console.log("No polygons found to update transparency");
     }
   };
 
-  // Function to get center coordinates from a feature geometry
-  const getCenterFromGeometry = (
-    feature: MapFeaturePoint | MapFeaturePolygon | MapFeaturePolyline
-  ): [number, number] | null => {
-    if (
-      feature.type === "point" &&
-      (feature.geometry as FeatureGeometryPoint).longitude !== undefined &&
-      (feature.geometry as FeatureGeometryPoint).latitude !== undefined
-    ) {
-      // For point features, use the point coordinates directly
-      return [
-        (feature.geometry as FeatureGeometryPoint).longitude,
-        (feature.geometry as FeatureGeometryPoint).latitude,
-      ];
-    } else if (
-      feature.type === "polygon" &&
-      (feature.geometry as FeatureGeometryPolygon).rings &&
-      (feature.geometry as FeatureGeometryPolygon).rings.length > 0
-    ) {
-      // For polygon features, calculate the centroid of the first ring
-      const rings = (feature.geometry as FeatureGeometryPolygon).rings[0];
-      if (rings && rings.length > 0) {
-        let sumX = 0;
-        let sumY = 0;
-        rings.forEach((ring: number[]) => {
-          sumX += ring[0];
-          sumY += ring[1];
-        });
-        return [sumX / rings.length, sumY / rings.length];
-      }
-    } else if (
-      feature.type === "polyline" &&
-      (feature.geometry as FeatureGeometryPolyline).paths &&
-      (feature.geometry as FeatureGeometryPolyline).paths.length > 0
-    ) {
-      // For polyline features, use the midpoint of the first path
-      const paths = (feature.geometry as FeatureGeometryPolyline).paths[0];
-      if (paths && paths.length > 0) {
-        const midIndex = Math.floor(paths.length / 2);
-        return paths[midIndex] as [number, number];
-      }
+  // Function to create a custom legend HTML element
+  const createLegendHTML = () => {
+    const legendContainer = document.createElement("div");
+    legendContainer.className = "esri-widget esri-component";
+    legendContainer.style.padding = "10px";
+    legendContainer.style.backgroundColor = "white";
+    legendContainer.style.minWidth = "150px";
+    legendContainer.style.maxWidth = "200px";
+
+    const legendTitle = document.createElement("div");
+    legendTitle.innerHTML = "<strong>Legend</strong>";
+    legendTitle.style.marginBottom = "8px";
+    legendTitle.style.borderBottom = "1px solid #ccc";
+    legendTitle.style.paddingBottom = "5px";
+    legendContainer.appendChild(legendTitle);
+
+    return legendContainer;
+  };
+
+  // Function to add legend item
+  const addLegendItem = (
+    container: HTMLDivElement,
+    symbol: any,
+    title: string,
+    type: string
+  ) => {
+    const item = document.createElement("div");
+    item.style.display = "flex";
+    item.style.alignItems = "center";
+    item.style.marginBottom = "5px";
+
+    const symbolDiv = document.createElement("div");
+    symbolDiv.style.width = "20px";
+    symbolDiv.style.height = "15px";
+    symbolDiv.style.marginRight = "8px";
+    symbolDiv.style.border = "1px solid #ccc";
+
+    if (type === "point") {
+      const color = symbol.color || [255, 0, 0, 1];
+      symbolDiv.style.backgroundColor = `rgba(${color[0]}, ${color[1]}, ${
+        color[2]
+      }, ${color[3] || 1})`;
+      symbolDiv.style.borderRadius = "50%";
+    } else if (type === "polygon") {
+      const color = symbol.color || [0, 255, 0, 0.5];
+      symbolDiv.style.backgroundColor = `rgba(${color[0]}, ${color[1]}, ${
+        color[2]
+      }, ${color[3] || 0.5})`;
+      const outline = symbol.outline?.color || [0, 128, 0, 1];
+      symbolDiv.style.borderColor = `rgba(${outline[0]}, ${outline[1]}, ${
+        outline[2]
+      }, ${outline[3] || 1})`;
+      symbolDiv.style.borderWidth = "2px";
+    } else if (type === "polyline") {
+      const color = symbol.color || [0, 0, 255, 1];
+      symbolDiv.style.backgroundColor = `rgba(${color[0]}, ${color[1]}, ${
+        color[2]
+      }, ${color[3] || 1})`;
+      symbolDiv.style.height = "3px";
+      symbolDiv.style.border = "none";
     }
-    return null;
+
+    const label = document.createElement("span");
+    label.innerHTML = title;
+    label.style.fontSize = "12px";
+
+    item.appendChild(symbolDiv);
+    item.appendChild(label);
+    container.appendChild(item);
+  };
+
+  // Function to update the legend with feature data
+  const updateLegend = (view: MapView) => {
+    // Remove existing legend if it exists
+    if (legendRef.current) {
+      view.ui.remove(legendRef.current);
+    }
+
+    // Create new legend container
+    const legendContainer = createLegendHTML();
+
+    // Add legend items for each feature type
+    if (pointGraphicsRef.current.length > 0) {
+      const symbol = pointGraphicsRef.current[0].symbol as SimpleMarkerSymbol;
+      addLegendItem(legendContainer, symbol, "Points", "point");
+    }
+
+    if (polygonGraphicsRef.current.length > 0) {
+      const symbol = polygonGraphicsRef.current[0].symbol as SimpleFillSymbol;
+      addLegendItem(legendContainer, symbol, "Polygons", "polygon");
+    }
+
+    if (polylineGraphicsRef.current.length > 0) {
+      const symbol = polylineGraphicsRef.current[0].symbol as SimpleLineSymbol;
+      addLegendItem(legendContainer, symbol, "Lines", "polyline");
+    }
+
+    // Add legend to the map UI
+    view.ui.add(legendContainer, "bottom-left");
+    legendRef.current = legendContainer;
+
+    console.log("Legend created and added to UI");
   };
 
   // Function to fetch data from data.json
@@ -157,13 +241,20 @@ export default function MapComponent() {
       const data: MapData = await response.json();
 
       // Clear existing graphics from previous fetches
-      if (graphicsLayerRef.current.length > 0) {
-        graphicsLayerRef.current.forEach((graphic) => {
-          view.graphics.remove(graphic);
-        });
-        graphicsLayerRef.current = [];
-        currentPolygonGraphicRef.current = null;
+      if (graphicsLayerRef.current) {
+        graphicsLayerRef.current.removeAll();
+      } else {
+        // Create a graphics layer if it doesn't exist
+        graphicsLayerRef.current = new GraphicsLayer();
+        if (view.map) {
+          view.map.add(graphicsLayerRef.current);
+        }
       }
+
+      // Reset graphics arrays
+      pointGraphicsRef.current = [];
+      polygonGraphicsRef.current = [];
+      polylineGraphicsRef.current = [];
 
       // Process and add features if they exist
       if (data.features && data.features.length > 0) {
@@ -188,13 +279,12 @@ export default function MapComponent() {
                   : [...feature.symbol.color, 1]; // Add opacity if not provided
             }
 
-            const symbol = (feature.symbol ||
-              new SimpleMarkerSymbol({
-                style: "circle",
-                size: 12,
-                color: symbolColor,
-                outline: { color: "white", width: 2 },
-              })) as SimpleMarkerSymbol;
+            const symbol = new SimpleMarkerSymbol({
+              style: "circle",
+              size: feature.symbol?.size || 12,
+              color: symbolColor,
+              outline: feature.symbol?.outline || { color: "white", width: 2 },
+            });
 
             graphic = new Graphic({
               geometry: point,
@@ -235,11 +325,13 @@ export default function MapComponent() {
               ];
             }
 
-            const symbol = (feature.symbol ||
-              new SimpleFillSymbol({
-                color: fillColor,
-                outline: { color: outlineColor, width: 2 },
-              })) as SimpleFillSymbol;
+            const symbol = new SimpleFillSymbol({
+              color: fillColor,
+              outline: feature.symbol?.outline || {
+                color: outlineColor,
+                width: 2,
+              },
+            });
 
             graphic = new Graphic({
               geometry: polygon,
@@ -252,8 +344,22 @@ export default function MapComponent() {
               },
             });
 
-            // Store reference to polygon graphic for transparency control
-            currentPolygonGraphicRef.current = graphic;
+            // Apply current transparency to newly created polygon
+            const polygonSymbol = graphic.symbol as SimpleFillSymbol;
+            if (polygonSymbol && polygonSymbol.color) {
+              const color = polygonSymbol.color as any;
+              if (color && Array.isArray(color)) {
+                const newColor = [
+                  ...color.slice(0, 3),
+                  currentTransparencyValue.current,
+                ];
+                const newSymbol = new SimpleFillSymbol({
+                  color: newColor,
+                  outline: polygonSymbol.outline,
+                });
+                graphic.symbol = newSymbol;
+              }
+            }
           } else if (feature.type === "polyline") {
             const polyline = new Polyline(
               feature.geometry as FeatureGeometryPolyline
@@ -274,11 +380,10 @@ export default function MapComponent() {
                   : [...feature.symbol.color, 1]; // Add full opacity if not provided
             }
 
-            const symbol = (feature.symbol ||
-              new SimpleLineSymbol({
-                color: lineColor,
-                width: 3,
-              })) as SimpleLineSymbol;
+            const symbol = new SimpleLineSymbol({
+              color: lineColor,
+              width: feature.symbol?.width || 3,
+            });
 
             graphic = new Graphic({
               geometry: polyline,
@@ -293,19 +398,34 @@ export default function MapComponent() {
           }
 
           if (graphic) {
-            view.graphics.add(graphic);
-            graphicsLayerRef.current.push(graphic);
+            // Add to the appropriate graphics array based on feature type
+            if (feature.type === "point") {
+              pointGraphicsRef.current.push(graphic);
+            } else if (feature.type === "polygon") {
+              polygonGraphicsRef.current.push(graphic);
+            } else if (feature.type === "polyline") {
+              polylineGraphicsRef.current.push(graphic);
+            }
+
+            // Add to the graphics layer
+            graphicsLayerRef.current?.add(graphic);
           }
         });
 
         // If we found a feature with is_center=true, center the map on it
         if (data.view && firstTimeFetch.current) {
-          console.log(data.view);
           view.goTo({
             center: [data.view.longitude, data.view.latitude],
             zoom: data.view.zoom, // Maintain current zoom level
           });
         }
+
+        // Update the legend with the new feature data
+        console.log("Updating legend with feature data...");
+        console.log("Points:", pointGraphicsRef.current.length);
+        console.log("Polygons:", polygonGraphicsRef.current.length);
+        console.log("Polylines:", polylineGraphicsRef.current.length);
+        updateLegend(view);
       }
     } catch (error) {
       console.error("Error fetching map data:", error);
@@ -376,9 +496,10 @@ export default function MapComponent() {
         const search = new Search({ view });
         view.ui.add(search, "top-right");
 
-        // Add legend widget
-        const legend = new Legend({ view });
-        view.ui.add(legend, "bottom-left");
+        // Legend will be created dynamically in updateLegend function
+
+        // Debug: Add console log to check if graphics are being created
+        console.log("Map view ready, setting up widgets...");
 
         // Create transparency slider control
         const sliderContainer = document.createElement("div");
@@ -415,9 +536,11 @@ export default function MapComponent() {
         sliderContainer.appendChild(sliderLabel);
         sliderContainer.appendChild(slider);
 
-        // Add slider to the UI
-        view.ui.add(sliderContainer, "bottom-left");
+        // Add slider to the UI (position it at top-left to avoid conflict with legend)
+        view.ui.add(sliderContainer, "top-left");
         polygonTransparencyRef.current = sliderContainer;
+
+        console.log("Transparency slider created and added to UI");
 
         // Initial data fetch
         setTimeout(() => {
@@ -427,7 +550,7 @@ export default function MapComponent() {
         // Set up auto-refresh every 10 seconds
         refreshIntervalRef.current = window.setInterval(() => {
           fetchMapData(view);
-        }, 10000); // 10 seconds
+        }, 1000 * 3); // seconds
       });
 
       // Clean up function
