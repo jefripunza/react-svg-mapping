@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 
 // Import ArcGIS modules
-import WebMap from "@arcgis/core/WebMap";
+import Map from "@arcgis/core/Map";
 import MapView from "@arcgis/core/views/MapView";
 import Graphic from "@arcgis/core/Graphic";
 import Point from "@arcgis/core/geometry/Point";
@@ -20,18 +20,16 @@ export default function MapComponent() {
 
   useEffect(() => {
     if (mapRef.current) {
-      // Create a new WebMap instance with the portal item ID
-      const webmap = new WebMap({
-        portalItem: {
-          id: "02b37471d5d84cacbebcccd785460e94",
-        },
+      // Create a new Map instance with satellite basemap that shows place names
+      const map = new Map({
+        basemap: "hybrid" // "hybrid" is satellite imagery with labels
       });
 
       // Create a new MapView instance
       // Bendung Rentang, Cirebon coordinates: 108.6075, -6.7034
       const view = new MapView({
         container: mapRef.current,
-        map: webmap,
+        map: map,
         zoom: 15,
         center: [108.6075, -6.7034], // Bendung Rentang, Cirebon coordinates
       });
