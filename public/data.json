@@ -35,8 +35,8 @@
           [
             [108.165930, -6.517915],
             [108.285930, -6.517915],
-            [108.226930, -6.506915],
-            [108.245930, -6.537915]
+            [108.265930, -6.487915],
+            [108.185930, -6.487915]
           ]
         ],
         "spatialReference": { "wkid": 4326 }
@@ -52,6 +52,60 @@
       "attributes": {
         "name": "Main Dam Structure",
         "description": "The main structure of Bendung Rentang"
+      }
+    },
+    {
+      "id": "polygon2",
+      "type": "polygon",
+      "geometry": {
+        "rings": [
+          [
+            [108.295930, -6.517915],
+            [108.335930, -6.517915],
+            [108.325930, -6.487915],
+            [108.285930, -6.487915]
+          ]
+        ],
+        "spatialReference": { "wkid": 4326 }
+      },
+      "symbol": {
+        "type": "simple-fill",
+        "color": [255, 165, 0, 0.5],
+        "outline": {
+          "color": [255, 140, 0, 1],
+          "width": 2
+        }
+      },
+      "attributes": {
+        "name": "East Irrigation Area",
+        "description": "Eastern irrigation zone of Bendung Rentang"
+      }
+    },
+    {
+      "id": "polygon3",
+      "type": "polygon",
+      "geometry": {
+        "rings": [
+          [
+            [108.165930, -6.547915],
+            [108.285930, -6.547915],
+            [108.265930, -6.527915],
+            [108.185930, -6.527915]
+          ]
+        ],
+        "spatialReference": { "wkid": 4326 }
+      },
+      "symbol": {
+        "type": "simple-fill",
+        "color": [100, 149, 237, 0.5],
+        "outline": {
+          "color": [65, 105, 225, 1],
+          "width": 2
+        }
+      },
+      "attributes": {
+        "name": "South Irrigation Area",
+        "description": "Southern irrigation zone of Bendung Rentang"
       }
     },
     {

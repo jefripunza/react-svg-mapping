@@ -151,11 +151,8 @@ export default function MapComponent() {
 
   // Function to extract color from ArcGIS symbol
   const extractColorFromSymbol = (symbol: any): number[] => {
-    console.log("Extracting color from symbol:", symbol);
-    
     // For ArcGIS symbols, color might be stored differently
     let color = null;
-    
     if (symbol.color) {
       if (Array.isArray(symbol.color)) {
         color = symbol.color;
@@ -164,21 +161,15 @@ export default function MapComponent() {
         color = [symbol.color.r, symbol.color.g, symbol.color.b, symbol.color.a || 1];
       } else if (typeof symbol.color === 'string') {
         // Handle hex colors or named colors
-        console.log("String color detected:", symbol.color);
         return [128, 128, 128, 1]; // Default gray for now
       }
     }
-    
-    console.log("Extracted color:", color);
     return color || [128, 128, 128, 1]; // Default gray
   };
   
   // Function to extract outline color from ArcGIS symbol
   const extractOutlineColorFromSymbol = (symbol: any): number[] => {
-    console.log("Extracting outline color from symbol:", symbol);
-    
     let outlineColor = null;
-    
     if (symbol.outline && symbol.outline.color) {
       if (Array.isArray(symbol.outline.color)) {
         outlineColor = symbol.outline.color;
@@ -187,8 +178,6 @@ export default function MapComponent() {
         outlineColor = [symbol.outline.color.r, symbol.outline.color.g, symbol.outline.color.b, symbol.outline.color.a || 1];
       }
     }
-    
-    console.log("Extracted outline color:", outlineColor);
     return outlineColor || [0, 0, 0, 1]; // Default black
   };
 
@@ -272,8 +261,6 @@ export default function MapComponent() {
     // Add legend to the map UI
     view.ui.add(legendContainer, "bottom-left");
     legendRef.current = legendContainer;
-
-    console.log("Legend created and added to UI with individual feature names");
   };
 
   // Function to fetch data from data.json
@@ -464,9 +451,9 @@ export default function MapComponent() {
 
         // Update the legend with the new feature data
         console.log("Updating legend with feature data...");
-        console.log("Points:", pointGraphicsRef.current.length);
-        console.log("Polygons:", polygonGraphicsRef.current.length);
-        console.log("Polylines:", polylineGraphicsRef.current.length);
+        // console.log("Points:", pointGraphicsRef.current.length);
+        // console.log("Polygons:", polygonGraphicsRef.current.length);
+        // console.log("Polylines:", polylineGraphicsRef.current.length);
         updateLegend(view);
       }
     } catch (error) {
