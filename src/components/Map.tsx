@@ -19,6 +19,7 @@ import "@arcgis/core/assets/esri/themes/light/main.css";
 // Interface for map data from data.json
 interface MapFeature {
   id: string;
+  is_center?: boolean;
   type: "point" | "polygon" | "polyline";
   geometry: any;
   symbol?: any;
@@ -38,81 +39,117 @@ export default function MapComponent() {
   const viewRef = useRef<MapView | null>(null);
   const graphicsLayerRef = useRef<Graphic[]>([]);
   const refreshIntervalRef = useRef<number | null>(null);
+  const polygonTransparencyRef = useRef<HTMLDivElement>(null);
+  const currentPolygonGraphicRef = useRef<Graphic | null>(null);
+
+  // Function to update polygon transparency
+  const updatePolygonTransparency = (transparency: number) => {
+    if (currentPolygonGraphicRef.current && viewRef.current) {
+      const graphic = currentPolygonGraphicRef.current;
+      const symbol = graphic.symbol as SimpleFillSymbol;
+
+      if (symbol) {
+        // Get the current color
+        const color = symbol.color as any;
+        if (color && Array.isArray(color)) {
+          // Create a new color array with updated transparency
+          const newColor = [...color.slice(0, 3), transparency];
+
+          // Create a new symbol with the updated color
+          const newSymbol = new SimpleFillSymbol({
+            color: newColor,
+            outline: symbol.outline,
+          });
+
+          // Update the graphic's symbol
+          graphic.symbol = newSymbol;
+        }
+      }
+    }
+  };
 
   // Function to fetch data from data.json
   const fetchMapData = async (view: MapView) => {
     try {
-      const response = await fetch('/data.json');
+      const response = await fetch("/data.json");
       const data: MapData = await response.json();
-      
+
       // Clear existing graphics from previous fetches
       if (graphicsLayerRef.current.length > 0) {
-        graphicsLayerRef.current.forEach(graphic => {
+        graphicsLayerRef.current.forEach((graphic) => {
           view.graphics.remove(graphic);
         });
         graphicsLayerRef.current = [];
+        currentPolygonGraphicRef.current = null;
       }
-      
+
       // Process and add features if they exist
       if (data.features && data.features.length > 0) {
-        data.features.forEach(feature => {
+        data.features.forEach((feature) => {
           let graphic: Graphic | null = null;
-          
+
           // Create the appropriate geometry based on feature type
           if (feature.type === "point") {
             const point = new Point(feature.geometry);
-            const symbol = feature.symbol || new SimpleMarkerSymbol({
-              style: "circle",
-              size: 12,
-              color: "red",
-              outline: { color: "white", width: 2 }
-            });
-            
+            const symbol =
+              feature.symbol ||
+              new SimpleMarkerSymbol({
+                style: "circle",
+                size: 12,
+                color: "red",
+                outline: { color: "white", width: 2 },
+              });
+
             graphic = new Graphic({
               geometry: point,
               symbol,
               attributes: feature.attributes || { id: feature.id },
               popupTemplate: feature.popupTemplate || {
                 title: feature.attributes?.name || "Point",
-                content: feature.attributes?.description || "Point feature"
-              }
+                content: feature.attributes?.description || "Point feature",
+              },
             });
-          } 
-          else if (feature.type === "polygon") {
+          } else if (feature.type === "polygon") {
             const polygon = new Polygon(feature.geometry);
-            const symbol = feature.symbol || new SimpleFillSymbol({
-              color: [0, 100, 255, 0.5],
-              outline: { color: [0, 50, 200, 1], width: 2 }
-            });
-            
+            const symbol =
+              feature.symbol ||
+              new SimpleFillSymbol({
+                color: [50, 205, 50, 0.5], // Default lime color with 0.5 opacity
+                outline: { color: [0, 128, 0, 1], width: 2 },
+              });
+
             graphic = new Graphic({
               geometry: polygon,
               symbol,
               attributes: feature.attributes || { id: feature.id },
               popupTemplate: feature.popupTemplate || {
                 title: feature.attributes?.name || "Polygon",
-                content: feature.attributes?.description || "Polygon feature"
-              }
+                content: feature.attributes?.description || "Polygon feature",
+              },
             });
-          } 
-          else if (feature.type === "polyline") {
+
+            // Store reference to polygon graphic for transparency control
+            currentPolygonGraphicRef.current = graphic;
+          } else if (feature.type === "polyline") {
             const polyline = new Polyline(feature.geometry);
-            const symbol = feature.symbol || new SimpleLineSymbol({
-              color: [0, 200, 255, 1],
-              width: 3
-            });
-            
+            const symbol =
+              feature.symbol ||
+              new SimpleLineSymbol({
+                color: [0, 0, 255, 1], // Blue color
+                width: 3,
+              });
+
             graphic = new Graphic({
               geometry: polyline,
               symbol,
               attributes: feature.attributes || { id: feature.id },
               popupTemplate: feature.popupTemplate || {
                 title: feature.attributes?.name || "Line",
-                content: feature.attributes?.description || "Line feature"
-              }
+                content: feature.attributes?.description || "Line feature",
+              },
             });
           }
-          
+
           if (graphic) {
             view.graphics.add(graphic);
             graphicsLayerRef.current.push(graphic);
@@ -128,7 +165,7 @@ export default function MapComponent() {
     if (mapRef.current) {
       // Create a new Map instance with satellite basemap that shows place names
       const map = new Map({
-        basemap: "hybrid" // "hybrid" is satellite imagery with labels
+        basemap: "hybrid", // "hybrid" is satellite imagery with labels
       });
 
       // Create a new MapView instance
@@ -142,9 +179,9 @@ export default function MapComponent() {
           dockEnabled: true,
           dockOptions: {
             position: "top-right",
-            breakpoint: false
-          }
-        }
+            breakpoint: false,
+          },
+        },
       });
 
       // Store the view reference
@@ -164,14 +201,18 @@ export default function MapComponent() {
         coordsDiv.style.fontSize = "12px";
         coordsDiv.style.pointerEvents = "none";
         coordsDiv.innerHTML = "Longitude, Latitude";
-        
+
         // Add the div to the view's UI in the bottom-right corner
         view.ui.add(coordsDiv, "bottom-right");
-        
+
         // Update the div with the pointer's coordinates
         view.on("pointer-move", (event) => {
           const point = view.toMap({ x: event.x, y: event.y });
-          if (point && typeof point.longitude === 'number' && typeof point.latitude === 'number') {
+          if (
+            point &&
+            typeof point.longitude === "number" &&
+            typeof point.latitude === "number"
+          ) {
             const longitude = point.longitude.toFixed(6);
             const latitude = point.latitude.toFixed(6);
             coordsDiv.innerHTML = `Lon: ${longitude}, Lat: ${latitude}`;
@@ -185,10 +226,49 @@ export default function MapComponent() {
         // Add legend widget
         const legend = new Legend({ view });
         view.ui.add(legend, "bottom-left");
-        
+
+        // Create transparency slider control
+        const sliderContainer = document.createElement("div");
+        sliderContainer.className = "esri-widget esri-component";
+        sliderContainer.style.padding = "10px";
+        sliderContainer.style.backgroundColor = "white";
+        sliderContainer.style.width = "250px";
+
+        const sliderLabel = document.createElement("div");
+        sliderLabel.innerHTML = "Polygon Transparency:";
+        sliderLabel.style.marginBottom = "5px";
+        sliderLabel.style.fontWeight = "bold";
+
+        const sliderValueDisplay = document.createElement("span");
+        sliderValueDisplay.innerHTML = "50%";
+        sliderValueDisplay.style.float = "right";
+        sliderLabel.appendChild(sliderValueDisplay);
+
+        const slider = document.createElement("input");
+        slider.type = "range";
+        slider.min = "0";
+        slider.max = "1";
+        slider.step = "0.01";
+        slider.value = "0.5";
+        slider.style.width = "100%";
+
+        // Add event listener to slider
+        slider.addEventListener("input", (e) => {
+          const value = parseFloat((e.target as HTMLInputElement).value);
+          sliderValueDisplay.innerHTML = `${Math.round(value * 100)}%`;
+          updatePolygonTransparency(value);
+        });
+
+        sliderContainer.appendChild(sliderLabel);
+        sliderContainer.appendChild(slider);
+
+        // Add slider to the UI
+        view.ui.add(sliderContainer, "bottom-left");
+        polygonTransparencyRef.current = sliderContainer;
+
         // Initial data fetch
         fetchMapData(view);
-        
+
         // Set up auto-refresh every 10 seconds
         refreshIntervalRef.current = window.setInterval(() => {
           fetchMapData(view);
@@ -201,7 +281,7 @@ export default function MapComponent() {
           viewRef.current.destroy();
           viewRef.current = null;
         }
-        
+
         // Clear the refresh interval
         if (refreshIntervalRef.current !== null) {
           clearInterval(refreshIntervalRef.current);
