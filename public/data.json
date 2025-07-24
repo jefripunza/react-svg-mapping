@@ -16,7 +16,7 @@
         "type": "simple-marker",
         "style": "circle",
         "size": 12,
-        "color": "red",
+        "color": "green",
         "outline": {
           "color": "white",
           "width": 2
