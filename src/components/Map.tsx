@@ -189,7 +189,6 @@ export default function MapComponent() {
         color[2]
       }, ${color[3] || 1})`;
       symbolDiv.style.height = "3px";
-      symbolDiv.style.border = "none";
     }
 
     const label = document.createElement("span");
@@ -211,27 +210,33 @@ export default function MapComponent() {
     // Create new legend container
     const legendContainer = createLegendHTML();
 
-    // Add legend items for each feature type
-    if (pointGraphicsRef.current.length > 0) {
-      const symbol = pointGraphicsRef.current[0].symbol as SimpleMarkerSymbol;
-      addLegendItem(legendContainer, symbol, "Points", "point");
-    }
+    // Add legend items for each individual feature
+    // Add point features
+    pointGraphicsRef.current.forEach((graphic) => {
+      const symbol = graphic.symbol as SimpleMarkerSymbol;
+      const featureName = (graphic.attributes?.name as string) || "Point Feature";
+      addLegendItem(legendContainer, symbol, featureName, "point");
+    });
 
-    if (polygonGraphicsRef.current.length > 0) {
-      const symbol = polygonGraphicsRef.current[0].symbol as SimpleFillSymbol;
-      addLegendItem(legendContainer, symbol, "Polygons", "polygon");
-    }
+    // Add polygon features
+    polygonGraphicsRef.current.forEach((graphic) => {
+      const symbol = graphic.symbol as SimpleFillSymbol;
+      const featureName = (graphic.attributes?.name as string) || "Polygon Feature";
+      addLegendItem(legendContainer, symbol, featureName, "polygon");
+    });
 
-    if (polylineGraphicsRef.current.length > 0) {
-      const symbol = polylineGraphicsRef.current[0].symbol as SimpleLineSymbol;
-      addLegendItem(legendContainer, symbol, "Lines", "polyline");
-    }
+    // Add polyline features
+    polylineGraphicsRef.current.forEach((graphic) => {
+      const symbol = graphic.symbol as SimpleLineSymbol;
+      const featureName = (graphic.attributes?.name as string) || "Line Feature";
+      addLegendItem(legendContainer, symbol, featureName, "polyline");
+    });
 
     // Add legend to the map UI
     view.ui.add(legendContainer, "bottom-left");
     legendRef.current = legendContainer;
 
-    console.log("Legend created and added to UI");
+    console.log("Legend created and added to UI with individual feature names");
   };
 
   // Function to fetch data from data.json
